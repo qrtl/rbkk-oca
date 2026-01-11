@@ -15,7 +15,9 @@
     "depends": ["purchase", "product_secondary_unit"],
     "data": [
         "views/product_views.xml",
+        "views/product_supplierinfo_views.xml",
         "views/purchase_order_views.xml",
+        "views/res_config_settings_views.xml",
         "reports/purchase_order_templates.xml",
         "reports/purchase_quotation_templates.xml",
     ],
