@@ -6,11 +6,6 @@
         <field name="code">model._cron_populate_search_name()</field>
         <field name="interval_number">1</field>
         <field name="interval_type">weeks</field>
-        <!-- start 5 minutes later -->
-        <field
-            name="nextcall"
-            eval="(DateTime.now() + relativedelta(minutes=5)).strftime('%Y-%m-%d %H:%M:%S')"
-        />
-        <field name="active">True</field>
+        <field name="active">False</field>
     </record>
 </odoo>

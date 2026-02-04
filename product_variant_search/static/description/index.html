@@ -391,10 +391,11 @@ together with
 <div class="section" id="known-issues-roadmap">
 <h1><a class="toc-backref" href="#toc-entry-1">Known issues / Roadmap</a></h1>
 <p>On installation, post_init_hook assigns search_name for up to 20,000
-products (hard cap) to avoid performance issues in huge DBs. The
-remaining products are processed by a cron job starting 5 minutes later.
-You need to disable the cron after all of your products are assigned
-search_name.</p>
+products (hard cap) to avoid performance issues in huge DBs. Any
+remaining products must be processed by the “Assign product search name”
+cron job. This cron is disabled by default, so an administrator should
+enable it when needed, then disable it again once all products have
+search_name assigned.</p>
 </div>
 <div class="section" id="bug-tracker">
 <h1><a class="toc-backref" href="#toc-entry-2">Bug Tracker</a></h1>
