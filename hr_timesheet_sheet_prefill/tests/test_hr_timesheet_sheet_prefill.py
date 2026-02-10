@@ -52,7 +52,7 @@ class TestTimesheetSheetPrefill(BaseCommon):
             f.employee_id = self.employee
             f.date_start = date_start
             f.date_end = date_end
-        return f.save()
+        return f.record
 
     def _add_timesheet_line(self, sheet, project, task, unit_amount=1.0):
         vals = {
@@ -63,21 +63,25 @@ class TestTimesheetSheetPrefill(BaseCommon):
             "date": sheet.date_start,
             "sheet_id": sheet.id,
         }
-        aal = self.aal_model.with_user(self.user).create(vals)
-        return aal
+        self.aal_model.with_user(self.user).create(vals)
 
-    def test_prefill_creates_all_combos_when_sheet_is_empty(self):
+    def _create_current_sheet_with_confirmed_previous(self, combos):
         prev_start = fields.Date.today() - relativedelta(weeks=2)
         prev_end = prev_start + timedelta(days=6)
         prev_sheet = self._create_sheet(prev_start, prev_end)
-        self._add_timesheet_line(prev_sheet, self.project_1, self.task_1)
-        self._add_timesheet_line(prev_sheet, self.project_2, self.task_2)
+        for project, task in combos:
+            self._add_timesheet_line(prev_sheet, project, task)
         prev_sheet.action_timesheet_confirm()
         self.assertEqual(prev_sheet.state, "confirm")
-        # Current sheet after previous ends
-        cur_start = prev_end + timedelta(days=1)
+        cur_start = fields.Date.today() - relativedelta(weeks=1)
         cur_end = cur_start + timedelta(days=6)
         cur_sheet = self._create_sheet(cur_start, cur_end)
+        return cur_sheet
+
+    def test_prefill_creates_all_combos_when_sheet_is_empty(self):
+        cur_sheet = self._create_current_sheet_with_confirmed_previous(
+            combos=[(self.project_1, self.task_1), (self.project_2, self.task_2)]
+        )
         cur_sheet.action_prefill_from_previous()
         after = {
             (line.project_id.id, line.task_id.id) for line in cur_sheet.timesheet_ids
@@ -85,20 +89,14 @@ class TestTimesheetSheetPrefill(BaseCommon):
         self.assertEqual(len(after), 2)
         self.assertIn((self.project_1.id, self.task_1.id), after)
         self.assertIn((self.project_2.id, self.task_2.id), after)
+        self.assertTrue(
+            all(line.unit_amount == 0.0 for line in cur_sheet.timesheet_ids)
+        )
 
     def test_prefill_creates_missing_project_task_combos(self):
-        prev_start = fields.Date.today() - relativedelta(weeks=2)
-        prev_end = prev_start + timedelta(days=6)
-        prev_sheet = self._create_sheet(prev_start, prev_end)
-        self._add_timesheet_line(prev_sheet, self.project_1, self.task_1)
-        self._add_timesheet_line(prev_sheet, self.project_2, self.task_2)
-        prev_sheet.action_timesheet_confirm()
-        self.assertEqual(prev_sheet.state, "confirm")
-        # Current sheet after previous ends
-        cur_start = prev_end + timedelta(days=1)
-        cur_end = cur_start + timedelta(days=6)
-        cur_sheet = self._create_sheet(cur_start, cur_end)
-        # Already has one combo, so only the other should be created
+        cur_sheet = self._create_current_sheet_with_confirmed_previous(
+            combos=[(self.project_1, self.task_1), (self.project_2, self.task_2)]
+        )
         self._add_timesheet_line(cur_sheet, self.project_1, self.task_1)
         before = {
             (line.project_id.id, line.task_id.id) for line in cur_sheet.timesheet_ids
@@ -113,7 +111,6 @@ class TestTimesheetSheetPrefill(BaseCommon):
         self.assertIn((self.project_2.id, self.task_2.id), after)
 
     def test_prefill_raises_if_no_previous_sheet(self):
-        # A sheet with no earlier confirmed/done sheets exists
         start = fields.Date.today() - relativedelta(weeks=1)
         end = start + timedelta(days=6)
         sheet = self._create_sheet(start, end)
@@ -121,16 +118,9 @@ class TestTimesheetSheetPrefill(BaseCommon):
             sheet.action_prefill_from_previous()
 
     def test_prefill_raises_if_nothing_to_create(self):
-        # Previous confirmed sheet
-        prev_start = fields.Date.today() - relativedelta(weeks=2)
-        prev_end = prev_start + timedelta(days=6)
-        prev_sheet = self._create_sheet(prev_start, prev_end)
-        self._add_timesheet_line(prev_sheet, self.project_1, self.task_1)
-        prev_sheet.action_timesheet_confirm()
-        # Current sheet contains same combo already
-        cur_start = prev_end + timedelta(days=1)
-        cur_end = cur_start + timedelta(days=6)
-        cur_sheet = self._create_sheet(cur_start, cur_end)
+        cur_sheet = self._create_current_sheet_with_confirmed_previous(
+            combos=[(self.project_1, self.task_1)]
+        )
         self._add_timesheet_line(cur_sheet, self.project_1, self.task_1)
         with self.assertRaises(UserError):
             cur_sheet.action_prefill_from_previous()
