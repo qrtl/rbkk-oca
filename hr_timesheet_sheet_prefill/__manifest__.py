@@ -13,5 +13,5 @@
     "data": [
         "views/hr_timesheet_sheet_views.xml",
     ],
-    "maintainers": ["yostashiro"],
+    "maintainers": ["yostashiro", "aungkokolin1997"],
 }

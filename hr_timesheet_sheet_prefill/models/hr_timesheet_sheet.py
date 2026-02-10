@@ -26,14 +26,9 @@ class Sheet(models.Model):
             raise UserError(
                 _("No previous confirmed or approved timesheet sheet found.")
             )
-        existing_keys = {
-            (line.project_id.id, line.task_id.id) for line in self.timesheet_ids
-        }
-        previous_lines = previous_sheet.timesheet_ids
+        existing_keys = {(line.project_id, line.task_id) for line in self.timesheet_ids}
         unique_combos = {
-            (line.project_id.id, line.task_id.id)
-            for line in previous_lines
-            if line.project_id
+            (line.project_id, line.task_id) for line in previous_sheet.timesheet_ids
         }
         lines_to_create = unique_combos - existing_keys
         if not lines_to_create:
@@ -43,8 +38,6 @@ class Sheet(models.Model):
                     "exist.",
                 )
             )
-        for project_id, task_id in lines_to_create:
-            vals = self._prepare_empty_analytic_line(
-                project_id=project_id, task_id=task_id
-            )
+        for project, task in lines_to_create:
+            vals = self._prepare_empty_analytic_line(project=project, task=task)
             self.env["account.analytic.line"]._sheet_create(vals)

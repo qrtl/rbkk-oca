@@ -87,6 +87,7 @@ Contributors
 -  `Quartile <https://www.quartile.co>`__:
 
    -  Yoshi Tashiro
+   -  Aung Ko Ko Lin
 
 Maintainers
 -----------
@@ -104,10 +105,13 @@ promote its widespread use.
 .. |maintainer-yostashiro| image:: https://github.com/yostashiro.png?size=40px
     :target: https://github.com/yostashiro
     :alt: yostashiro
+.. |maintainer-aungkokolin1997| image:: https://github.com/aungkokolin1997.png?size=40px
+    :target: https://github.com/aungkokolin1997
+    :alt: aungkokolin1997
 
-Current `maintainer <https://odoo-community.org/page/maintainer-role>`__:
+Current `maintainers <https://odoo-community.org/page/maintainer-role>`__:
 
-|maintainer-yostashiro| 
+|maintainer-yostashiro| |maintainer-aungkokolin1997| 
 
 This module is part of the `OCA/timesheet <https://github.com/OCA/timesheet/tree/18.0/hr_timesheet_sheet_prefill>`_ project on GitHub.
 
