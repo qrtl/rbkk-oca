@@ -2,6 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "MRP Stock Move Actual Date",
+    "summary": "Extend actual date handling to manufacturing and unbuild orders",
     "version": "18.0.1.0.0",
     "author": "Quartile, Odoo Community Association (OCA)",
     "website": "https://github.com/OCA/manufacture",
@@ -12,5 +13,6 @@
         "views/mrp_production_views.xml",
         "views/mrp_unbuild_views.xml",
     ],
+    "maintainers": ["yostashiro", "aungkokolin1997"],
     "installable": True,
 }
