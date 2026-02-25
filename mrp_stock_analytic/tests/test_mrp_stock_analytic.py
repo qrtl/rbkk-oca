@@ -148,3 +148,38 @@ class TestMrpStockAnalytic(CommonStockPicking):
             backorder.move_raw_ids.analytic_distribution,
             backorder.analytic_distribution,
         )
+
+    def test_wip_accounting_with_analytic_distribution(self):
+        """Test analytic distribution flows from MO to WIP wizard lines and then
+        to the created journal entries."""
+        production = self.production
+        production.analytic_distribution = self.analytic_distribution
+        wip_wizard = Form(
+            self.env["mrp.account.wip.accounting"].with_context(
+                active_ids=[production.id]
+            )
+        )
+        wizard = wip_wizard.save()
+        wizard._compute_line_ids()
+        wip_line = wizard.line_ids.filtered(
+            lambda line: line.account_id.id
+            == self.env.company.account_production_wip_account_id.id
+        )
+        self.assertTrue(wip_line)
+        self.assertEqual(wip_line.analytic_distribution, self.analytic_distribution)
+        wizard.confirm()
+        wip_move = self.env["account.move"].search(
+            [
+                ("wip_production_ids", "in", production.ids),
+                ("reversed_entry_id", "=", False),
+            ]
+        )
+        self.assertTrue(wip_move)
+        wip_move_line = wip_move.line_ids.filtered(
+            lambda line: line.account_id.id
+            == self.env.company.account_production_wip_account_id.id
+        )
+        self.assertTrue(wip_move_line)
+        self.assertEqual(
+            wip_move_line.analytic_distribution, self.analytic_distribution
+        )

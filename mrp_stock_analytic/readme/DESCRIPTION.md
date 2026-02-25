@@ -5,4 +5,9 @@ related component stock moves.
 This function can be useful when cost analysis needs to be done on
 flushed components.
 
+Additionally, analytic distribution from manufacturing orders is propagated
+to WIP accounting entries. When creating WIP journal entries through the WIP
+Accounting wizard, the analytic distribution is automatically applied to the
+WIP account move lines.
+
 This module depends on OCA module stock_analytic.
