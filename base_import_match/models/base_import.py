@@ -92,7 +92,18 @@ class BaseImportMatch(models.Model):
                     if imported_row[field.name] != field.imported_value:
                         combination_valid = False
                         break
-                domain.append((field.name, "=", converted_row[field.name]))
+                value = converted_row[field.name]
+                if isinstance(value, list) and value and isinstance(value[0], tuple):
+                    # x2many field: use raw imported values so Odoo's domain
+                    # evaluation resolves display names in context, correctly
+                    # scoping to the candidate record's own related records.
+                    raw_value = imported_row.get(field.name, "")
+                    for ref in raw_value.split(","):
+                        ref = ref.strip()
+                        if ref:
+                            domain.append((field.name, "=", ref))
+                else:
+                    domain.append((field.name, "=", value))
             if not combination_valid:
                 continue
             match = model.search(domain)
@@ -108,6 +119,21 @@ class BaseImportMatch(models.Model):
                 )
         # Return an empty match if none or multiple was found
         return model
+
+    @api.model
+    def _match_only_fields(self, model_name, fields):
+        """Return field names that are marked as match-only in usable rules.
+
+        These fields should be removed from the import data after matching
+        so they are not written during the actual import.
+        """
+        result = set()
+        usable = self.browse(self._usable_rules(model_name, fields))
+        for rule in usable:
+            for field in rule.field_ids:
+                if field.match_only and field.name in fields:
+                    result.add(field.name)
+        return result
 
     @api.model
     @tools.ormcache("model_name", "frozenset(fields)")
@@ -155,6 +181,12 @@ class BaseImportMatchField(models.Model):
     model_id = fields.Many2one(related="match_id.model_id")
     conditional = fields.Boolean(
         help="Enable if you want to use this field only in some conditions."
+    )
+    match_only = fields.Boolean(
+        help="If enabled, this field is used only for matching and will be "
+        "excluded from the actual import. Useful for fields like x2many "
+        "relations where the value is needed to identify the record but "
+        "should not be written during import."
     )
     imported_value = fields.Char(
         help="If the imported value is not this, the whole matching rule will "

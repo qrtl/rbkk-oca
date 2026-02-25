@@ -60,5 +60,21 @@ class Base(models.AbstractModel):
                 newdata.append(tuple(row[f] for f in clean_fields))
             # We will import the patched data to get updates on matches
             data = newdata
+            # Remove match-only fields from import data so they are used
+            # for identification but not written during the actual import.
+            match_only_fields = self.env["base_import.match"]._match_only_fields(
+                self._name, fields
+            )
+            if match_only_fields:
+                drop_indexes = sorted(
+                    (fields.index(f) for f in match_only_fields), reverse=True
+                )
+                for idx in drop_indexes:
+                    fields.pop(idx)
+                drop_set = set(drop_indexes)
+                data = [
+                    tuple(v for i, v in enumerate(row) if i not in drop_set)
+                    for row in data
+                ]
         # Normal method handles the rest of the job
         return super().load(fields, data)

@@ -28,6 +28,7 @@
                                     name="imported_value"
                                     readonly="not conditional"
                                 />
+                                <field name="match_only" />
                             </list>
                         </field>
                         <field name="sequence" />
