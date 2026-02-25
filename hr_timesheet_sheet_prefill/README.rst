@@ -84,10 +84,10 @@ Authors
 Contributors
 ------------
 
--  `Quartile <https://www.quartile.co>`__:
+- `Quartile <https://www.quartile.co>`__:
 
-   -  Yoshi Tashiro
-   -  Aung Ko Ko Lin
+  - Yoshi Tashiro
+  - Aung Ko Ko Lin
 
 Maintainers
 -----------
