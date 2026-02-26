@@ -25,12 +25,12 @@ msgstr "前期間のプロジェクト/タスクの組み合わせはすべて�
 #. odoo-python
 #: code:addons/hr_timesheet_sheet_prefill/models/hr_timesheet_sheet.py:0
 msgid "No previous confirmed or approved timesheet sheet found."
-msgstr "前期間の確認済みまたは承認済みのタイムシートが見つかりませんでした。"
+msgstr "前期間の確認済みまたは承認済みのタイムシートレポートが見つかりませんでした。"
 
 #. module: hr_timesheet_sheet_prefill
 #: model_terms:ir.ui.view,arch_db:hr_timesheet_sheet_prefill.hr_timesheet_sheet_form
 msgid "Prefill from Previous Period"
-msgstr "前期間の内容を仮入力"
+msgstr "前期間から明細行を作成"
 
 #. module: hr_timesheet_sheet_prefill
 #: model:ir.model,name:hr_timesheet_sheet_prefill.model_hr_timesheet_sheet
@@ -41,4 +41,4 @@ msgstr "タイムシート"
 #. odoo-python
 #: code:addons/hr_timesheet_sheet_prefill/models/hr_timesheet_sheet.py:0
 msgid "You can only prefill a draft timesheet sheet."
-msgstr "下書き状態のタイムシートのみ仮入力できます。"
+msgstr "ドラフトのタイムシートレポートのみ仮入力できます。"
