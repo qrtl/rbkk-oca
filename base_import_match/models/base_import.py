@@ -121,21 +121,6 @@ class BaseImportMatch(models.Model):
         return model
 
     @api.model
-    def _match_only_fields(self, model_name, fields):
-        """Return field names that are marked as match-only in usable rules.
-
-        These fields should be removed from the import data after matching
-        so they are not written during the actual import.
-        """
-        result = set()
-        usable = self.browse(self._usable_rules(model_name, fields))
-        for rule in usable:
-            for field in rule.field_ids:
-                if field.match_only and field.name in fields:
-                    result.add(field.name)
-        return result
-
-    @api.model
     @tools.ormcache("model_name", "frozenset(fields)")
     def _usable_rules(self, model_name, fields):
         """Return a set of elements usable for calling ``load()``.
@@ -182,12 +167,6 @@ class BaseImportMatchField(models.Model):
     conditional = fields.Boolean(
         help="Enable if you want to use this field only in some conditions."
     )
-    match_only = fields.Boolean(
-        help="If enabled, this field is used only for matching and will be "
-        "excluded from the actual import. Useful for fields like x2many "
-        "relations where the value is needed to identify the record but "
-        "should not be written during import."
-    )
     imported_value = fields.Char(
         help="If the imported value is not this, the whole matching rule will "
         "be discarded. Be careful, this data is always treated as a "
@@ -209,3 +188,26 @@ class BaseImportMatchField(models.Model):
     def _onchange_match_id_name(self):
         """Update match name."""
         self.mapped("match_id")._compute_name()
+
+
+class BaseImportImport(models.TransientModel):
+    _inherit = "base_import.import"
+
+    def parse_preview(self, options, count=10):
+        result = super().parse_preview(options, count=count)
+        if not result.get("error"):
+            match_fields = set()
+            rules = self.env["base_import.match"].search(
+                [("model_name", "=", self.res_model)]
+            )
+            for rule in rules:
+                for field in rule.field_ids:
+                    match_fields.add(field.name)
+            result["match_fields"] = list(match_fields)
+        return result
+
+    def execute_import(self, fields, columns, options, dryrun=False):
+        match_only = options.pop("import_match_only_fields", None)
+        if match_only is not None:
+            self = self.with_context(import_match_only_fields=match_only)
+        return super().execute_import(fields, columns, options, dryrun=dryrun)

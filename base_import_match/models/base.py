@@ -15,8 +15,18 @@ class Base(models.AbstractModel):
         XMLID in place, Odoo will understand that it must *update* the
         record instead of *creating* a new one.
         """
-        # We only need to patch this call if there are usable rules for it
-        if self.env["base_import.match"]._usable_rules(self._name, fields):
+        # UI-selected match fields prevail; configured rules are only used
+        # when the context key is absent (e.g. programmatic imports).
+        ctx_match_only = self.env.context.get("import_match_only_fields")
+        if ctx_match_only is not None:
+            match_only_fields = set(ctx_match_only) & set(fields)
+            has_rules = False
+        else:
+            match_only_fields = set()
+            has_rules = bool(
+                self.env["base_import.match"]._usable_rules(self._name, fields)
+            )
+        if match_only_fields or has_rules:
             newdata = list()
             # Change .id (dbid) by id (xmlid)
             if ".id" in fields:
@@ -48,6 +58,8 @@ class Base(models.AbstractModel):
                 elif dbid:
                     # Find the xmlid for this dbid
                     match = self.browse(dbid)
+                elif match_only_fields:
+                    match = self._match_by_fields(match_only_fields, record, row)
                 else:
                     # Store records that match a combination
                     match = self.env["base_import.match"]._match_find(self, record, row)
@@ -60,11 +72,7 @@ class Base(models.AbstractModel):
                 newdata.append(tuple(row[f] for f in clean_fields))
             # We will import the patched data to get updates on matches
             data = newdata
-            # Remove match-only fields from import data so they are used
-            # for identification but not written during the actual import.
-            match_only_fields = self.env["base_import.match"]._match_only_fields(
-                self._name, fields
-            )
+            # Remove match-only fields so they are not written.
             if match_only_fields:
                 drop_indexes = sorted(
                     (fields.index(f) for f in match_only_fields), reverse=True
@@ -78,3 +86,23 @@ class Base(models.AbstractModel):
                 ]
         # Normal method handles the rest of the job
         return super().load(fields, data)
+
+    @api.model
+    def _match_by_fields(self, match_fields, converted_row, imported_row):
+        """Find a single existing record matching on the given fields."""
+        domain = []
+        for fname in match_fields:
+            if fname not in converted_row:
+                continue
+            value = converted_row[fname]
+            if isinstance(value, list) and value and isinstance(value[0], tuple):
+                for ref in imported_row.get(fname, "").split(","):
+                    ref = ref.strip()
+                    if ref:
+                        domain.append((fname, "=", ref))
+            else:
+                domain.append((fname, "=", value))
+        if not domain:
+            return self
+        match = self.search(domain)
+        return match if len(match) == 1 else self
