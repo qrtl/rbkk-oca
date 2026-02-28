@@ -380,8 +380,8 @@ import is an update or a new record.</p>
 <p>This is useful when you need to sync heterogeneous databases, and the
 field you use to match records in those databases with Odoo’s is not the
 XMLID but the name, VAT, email, etc.</p>
-<p>After installing this module, the import preview UI adds a <strong>Match
-Only</strong> column. Checking the box on a field means:</p>
+<p>After installing this module, the import preview UI adds a <strong>Match</strong>
+column. Checking the box on a field means:</p>
 <ul class="simple">
 <li>Use it to <strong>find existing records</strong> (match key).</li>
 <li><strong>Do not write</strong> its value during the actual import.</li>
@@ -455,8 +455,8 @@ when <tt class="docutils literal">is_company</tt> is <tt class="docutils literal
 </div>
 <div class="section" id="configuration">
 <h1><a class="toc-backref" href="#toc-entry-1">Configuration</a></h1>
-<p>Import Match rules are optional templates that pre-check the <strong>Match
-Only</strong> column in the import preview. To configure them:</p>
+<p>Import Match rules are optional templates that pre-check the <strong>Match</strong>
+column in the import preview. To configure them:</p>
 <ol class="arabic simple">
 <li>Go to <em>Settings &gt; Technical &gt; Database Structure &gt; Import Match</em>.</li>
 <li><em>Create</em>.</li>
@@ -480,9 +480,9 @@ that string, but will not match <tt class="docutils literal">1</tt> or <tt class
 <ol class="arabic simple">
 <li>Go to any list or kanban view.</li>
 <li>Go to <em>Action &gt; Import records</em> and upload your file.</li>
-<li>In the import preview, check <strong>Match Only</strong> on the fields you want to
-use as matching keys (e.g. name, email, VAT). These fields will be
-used to find existing records but will not be written.</li>
+<li>In the import preview, check <strong>Match</strong> on the fields you want to use
+as matching keys (e.g. name, email, VAT). These fields will be used
+to find existing records but will not be written.</li>
 <li>Proceed with the import as usual.</li>
 </ol>
 <p>If Import Match rules are configured for the model, their fields will be
@@ -493,6 +493,9 @@ pre-checked automatically.</p>
 <ul class="simple">
 <li>Add a setting to throw an error when multiple matches are found,
 instead of falling back to creation of new record.</li>
+<li>Support matching on child record fields (one2many subfields) in the
+import preview. Currently, matching only works for direct fields of
+the imported model.</li>
 </ul>
 </div>
 <div class="section" id="bug-tracker">

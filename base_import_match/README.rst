@@ -41,8 +41,8 @@ This is useful when you need to sync heterogeneous databases, and the
 field you use to match records in those databases with Odoo's is not the
 XMLID but the name, VAT, email, etc.
 
-After installing this module, the import preview UI adds a **Match
-Only** column. Checking the box on a field means:
+After installing this module, the import preview UI adds a **Match**
+column. Checking the box on a field means:
 
 -  Use it to **find existing records** (match key).
 -  **Do not write** its value during the actual import.
@@ -107,8 +107,8 @@ In demo instances there are more examples.
 Configuration
 =============
 
-Import Match rules are optional templates that pre-check the **Match
-Only** column in the import preview. To configure them:
+Import Match rules are optional templates that pre-check the **Match**
+column in the import preview. To configure them:
 
 1. Go to *Settings > Technical > Database Structure > Import Match*.
 2. *Create*.
@@ -133,9 +133,9 @@ To use this module, you need to:
 
 1. Go to any list or kanban view.
 2. Go to *Action > Import records* and upload your file.
-3. In the import preview, check **Match Only** on the fields you want to
-   use as matching keys (e.g. name, email, VAT). These fields will be
-   used to find existing records but will not be written.
+3. In the import preview, check **Match** on the fields you want to use
+   as matching keys (e.g. name, email, VAT). These fields will be used
+   to find existing records but will not be written.
 4. Proceed with the import as usual.
 
 If Import Match rules are configured for the model, their fields will be
@@ -146,6 +146,9 @@ Known issues / Roadmap
 
 -  Add a setting to throw an error when multiple matches are found,
    instead of falling back to creation of new record.
+-  Support matching on child record fields (one2many subfields) in the
+   import preview. Currently, matching only works for direct fields of
+   the imported model.
 
 Bug Tracker
 ===========

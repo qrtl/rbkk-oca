@@ -1,5 +1,5 @@
-Import Match rules are optional templates that pre-check the **Match Only** column in
-the import preview. To configure them:
+Import Match rules are optional templates that pre-check the **Match** column in the
+import preview. To configure them:
 
 1.  Go to *Settings \> Technical \> Database Structure \> Import Match*.
 2.  *Create*.

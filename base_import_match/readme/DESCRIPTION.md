@@ -11,8 +11,8 @@ This is useful when you need to sync heterogeneous databases, and the
 field you use to match records in those databases with Odoo's is not the
 XMLID but the name, VAT, email, etc.
 
-After installing this module, the import preview UI adds a **Match Only** column.
-Checking the box on a field means:
+After installing this module, the import preview UI adds a **Match** column. Checking
+the box on a field means:
 
 - Use it to **find existing records** (match key).
 - **Do not write** its value during the actual import.

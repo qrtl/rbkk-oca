@@ -1,10 +1,30 @@
 # Copyright 2017 Jairo Llopis <jairo.llopis@tecnativa.com>
+# Copyright 2026 Quartile (https://www.quartile.co)
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 from odoo import api, models
 
 
 class Base(models.AbstractModel):
     _inherit = "base"
+
+    @api.model
+    def _match_by_fields(self, match_fields, converted_row, imported_row):
+        """Find a single existing record matching on the given fields."""
+        domain = []
+        for fname in match_fields & converted_row.keys():
+            value = converted_row[fname]
+            # For x2many fields
+            if isinstance(value, list) and value and isinstance(value[0], tuple):
+                for ref in imported_row.get(fname, "").split(","):
+                    ref = ref.strip()
+                    if ref:
+                        domain.append((fname, "=", ref))
+            else:
+                domain.append((fname, "=", value))
+        if not domain:
+            return self
+        match = self.search(domain)
+        return match if len(match) == 1 else self
 
     @api.model
     def load(self, fields, data):
@@ -15,17 +35,13 @@ class Base(models.AbstractModel):
         XMLID in place, Odoo will understand that it must *update* the
         record instead of *creating* a new one.
         """
-        # UI-selected match fields prevail; configured rules are only used
-        # when the context key is absent (e.g. programmatic imports).
+        # UI-selected match fields prevail; configured rules are only used when the
+        # context key is absent (e.g. programmatic imports).
         ctx_match_only = self.env.context.get("import_match_only_fields")
-        if ctx_match_only is not None:
-            match_only_fields = set(ctx_match_only) & set(fields)
-            has_rules = False
-        else:
-            match_only_fields = set()
-            has_rules = bool(
-                self.env["base_import.match"]._usable_rules(self._name, fields)
-            )
+        match_only_fields = set(ctx_match_only or []) & set(fields)
+        has_rules = ctx_match_only is None and bool(
+            self.env["base_import.match"]._usable_rules(self._name, fields)
+        )
         if match_only_fields or has_rules:
             newdata = list()
             # Change .id (dbid) by id (xmlid)
@@ -59,6 +75,7 @@ class Base(models.AbstractModel):
                     # Find the xmlid for this dbid
                     match = self.browse(dbid)
                 elif match_only_fields:
+                    # Match using user-selected fields from the UI
                     match = self._match_by_fields(match_only_fields, record, row)
                 else:
                     # Store records that match a combination
@@ -72,37 +89,11 @@ class Base(models.AbstractModel):
                 newdata.append(tuple(row[f] for f in clean_fields))
             # We will import the patched data to get updates on matches
             data = newdata
-            # Remove match-only fields so they are not written.
+            # Rebuild fields/data without match-only columns.
             if match_only_fields:
-                drop_indexes = sorted(
-                    (fields.index(f) for f in match_only_fields), reverse=True
-                )
-                for idx in drop_indexes:
-                    fields.pop(idx)
-                drop_set = set(drop_indexes)
-                data = [
-                    tuple(v for i, v in enumerate(row) if i not in drop_set)
-                    for row in data
-                ]
+                drop_set = {fields.index(f) for f in match_only_fields}
+                keep_indexes = [i for i in range(len(fields)) if i not in drop_set]
+                fields[:] = [fields[i] for i in keep_indexes]
+                data = [tuple(row[i] for i in keep_indexes) for row in data]
         # Normal method handles the rest of the job
         return super().load(fields, data)
-
-    @api.model
-    def _match_by_fields(self, match_fields, converted_row, imported_row):
-        """Find a single existing record matching on the given fields."""
-        domain = []
-        for fname in match_fields:
-            if fname not in converted_row:
-                continue
-            value = converted_row[fname]
-            if isinstance(value, list) and value and isinstance(value[0], tuple):
-                for ref in imported_row.get(fname, "").split(","):
-                    ref = ref.strip()
-                    if ref:
-                        domain.append((fname, "=", ref))
-            else:
-                domain.append((fname, "=", value))
-        if not domain:
-            return self
-        match = self.search(domain)
-        return match if len(match) == 1 else self

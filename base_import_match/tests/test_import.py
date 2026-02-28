@@ -15,27 +15,19 @@ OPTIONS = {
 
 
 class ImportCase(TransactionCase):
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        cls.partner_match = cls.env["res.partner"].create(
-            {"name": "Match Partner", "email": "match@example.com"}
-        )
-        cls.partner_vat = cls.env["res.partner"].create(
-            {"name": "VAT Partner", "vat": "BE0477472701", "is_company": True}
-        )
-
-    def _base_import_record(self, res_model, file_name):
+    def _base_import_record(self, res_model, file_name=None, data=None):
         """Create and return a ``base_import.import`` record."""
-        with open(PATH % file_name) as demo_file:
-            return self.env["base_import.import"].create(
-                {
-                    "res_model": res_model,
-                    "file": demo_file.read(),
-                    "file_name": f"{file_name}.csv",
-                    "file_type": "csv",
-                }
-            )
+        if file_name:
+            with open(PATH % file_name) as demo_file:
+                data = demo_file.read()
+        return self.env["base_import.import"].create(
+            {
+                "res_model": res_model,
+                "file": data,
+                "file_name": f"{file_name or 'test'}.csv",
+                "file_type": "csv",
+            }
+        )
 
     def test_res_partner_external_id(self):
         """Change name based on External ID."""
@@ -125,14 +117,11 @@ class ImportCase(TransactionCase):
 
     def test_match_only_from_ui(self):
         """Match by email via UI selection, update function, don't write email."""
-        partner = self.partner_match
-        record = self.env["base_import.import"].create(
-            {
-                "res_model": "res.partner",
-                "file": "match@example.com,New Function\n",
-                "file_name": "test.csv",
-                "file_type": "csv",
-            }
+        partner = self.env["res.partner"].create(
+            {"name": "Match Partner", "email": "match@example.com"}
+        )
+        record = self._base_import_record(
+            "res.partner", data="match@example.com,New Function\n"
         )
         options = dict(OPTIONS, import_match_only_fields=["email"])
         record.execute_import(["email", "function"], [], options)
@@ -142,13 +131,8 @@ class ImportCase(TransactionCase):
 
     def test_match_only_no_match_creates(self):
         """When match-only field doesn't find a record, create a new one."""
-        record = self.env["base_import.import"].create(
-            {
-                "res_model": "res.partner",
-                "file": "nonexistent@example.com,New Partner\n",
-                "file_name": "test.csv",
-                "file_type": "csv",
-            }
+        record = self._base_import_record(
+            "res.partner", data="nonexistent@example.com,New Partner\n"
         )
         options = dict(OPTIONS, import_match_only_fields=["email"])
         count_before = self.env["res.partner"].search_count([])
@@ -158,15 +142,12 @@ class ImportCase(TransactionCase):
 
     def test_match_only_empty_skips_rules(self):
         """Empty match-only list from UI skips matching even if rules exist."""
-        partner = self.partner_vat
+        partner = self.env["res.partner"].create(
+            {"name": "VAT Partner", "vat": "BE0411905847", "is_company": True}
+        )
         original_name = partner.name
-        record = self.env["base_import.import"].create(
-            {
-                "res_model": "res.partner",
-                "file": "Changed Name,BE0477472701,True\n",
-                "file_name": "test.csv",
-                "file_type": "csv",
-            }
+        record = self._base_import_record(
+            "res.partner", data="Changed Name,BE0411905847,True\n"
         )
         # Empty list = user unchecked everything in UI -> no matching
         options = dict(OPTIONS, import_match_only_fields=[])

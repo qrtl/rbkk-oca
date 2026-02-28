@@ -1,5 +1,6 @@
 # Copyright 2016 Grupo ESOC Ingeniería de Servicios, S.L.U. - Jairo Llopis
 # Copyright 2016 Tecnativa - Vicent Cubells
+# Copyright 2026 Quartile (https://www.quartile.co)
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 import logging
 
@@ -92,18 +93,7 @@ class BaseImportMatch(models.Model):
                     if imported_row[field.name] != field.imported_value:
                         combination_valid = False
                         break
-                value = converted_row[field.name]
-                if isinstance(value, list) and value and isinstance(value[0], tuple):
-                    # x2many field: use raw imported values so Odoo's domain
-                    # evaluation resolves display names in context, correctly
-                    # scoping to the candidate record's own related records.
-                    raw_value = imported_row.get(field.name, "")
-                    for ref in raw_value.split(","):
-                        ref = ref.strip()
-                        if ref:
-                            domain.append((field.name, "=", ref))
-                else:
-                    domain.append((field.name, "=", value))
+                domain.append((field.name, "=", converted_row[field.name]))
             if not combination_valid:
                 continue
             match = model.search(domain)
@@ -194,17 +184,13 @@ class BaseImportImport(models.TransientModel):
     _inherit = "base_import.import"
 
     def parse_preview(self, options, count=10):
-        result = super().parse_preview(options, count=count)
-        if not result.get("error"):
-            match_fields = set()
+        res = super().parse_preview(options, count=count)
+        if not res.get("error"):
             rules = self.env["base_import.match"].search(
                 [("model_name", "=", self.res_model)]
             )
-            for rule in rules:
-                for field in rule.field_ids:
-                    match_fields.add(field.name)
-            result["match_fields"] = list(match_fields)
-        return result
+            res["match_fields"] = list(set(rules.mapped("field_ids.name")))
+        return res
 
     def execute_import(self, fields, columns, options, dryrun=False):
         match_only = options.pop("import_match_only_fields", None)
