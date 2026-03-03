@@ -73,6 +73,19 @@ class ProductSecondaryUnitMixin(models.AbstractModel):
             return []
         return [self._secondary_unit_fields["qty_field"]]
 
+    @api.model
+    def _convert_qty_to_secondary_uom(self, qty):
+        # Intended to be called from other operations if needed.
+        self.ensure_one()
+        uom_line = self._get_uom_line()
+        uom_product = self.product_id[self._product_uom_field]
+        if uom_line != uom_product:
+            qty = uom_line._compute_quantity(qty, uom_product)
+        return float_round(
+            qty / (self.secondary_uom_id.factor or 1.0),
+            precision_rounding=self.secondary_uom_id.uom_id.rounding,
+        )
+
     @api.depends(lambda x: x._get_secondary_uom_qty_depends())
     def _compute_secondary_uom_qty(self):
         for line in self:
@@ -81,14 +94,8 @@ class ProductSecondaryUnitMixin(models.AbstractModel):
                 continue
             elif line.secondary_uom_id.dependency_type == "independent":
                 continue
-            uom_line = line._get_uom_line()
-            uom_product = line.product_id[line._product_uom_field]
             qty_line = line._get_quantity_from_line()
-            qty_base = uom_line._compute_quantity(qty_line, uom_product)
-            line.secondary_uom_qty = float_round(
-                qty_base / (line.secondary_uom_id.factor or 1.0),
-                precision_rounding=line.secondary_uom_id.uom_id.rounding,
-            )
+            line.secondary_uom_qty = line._convert_qty_to_secondary_uom(qty_line)
 
     def _get_default_value_for_qty_field(self):
         return self.default_get([self._secondary_unit_fields["qty_field"]]).get(
@@ -131,14 +138,8 @@ class ProductSecondaryUnitMixin(models.AbstractModel):
             return
         elif self.secondary_uom_id.dependency_type == "independent":
             return
-        uom_line = self._get_uom_line()
-        uom_product = self.product_id[self._product_uom_field]
         qty_line = self._get_quantity_from_line()
-        qty_base = uom_line._compute_quantity(qty_line, uom_product)
-        self.secondary_uom_qty = float_round(
-            qty_base / (self.secondary_uom_id.factor or 1.0),
-            precision_rounding=self.secondary_uom_id.uom_id.rounding,
-        )
+        self.secondary_uom_qty = self._convert_qty_to_secondary_uom(qty_line)
 
     @api.model
     def default_get(self, fields_list):
@@ -148,3 +149,56 @@ class ProductSecondaryUnitMixin(models.AbstractModel):
         ):
             defaults["secondary_uom_qty"] = 1.0
         return defaults
+
+    def _get_secondary_uom_report_type(self):
+        """Return 'sale', 'purchase', or None."""
+        self.ensure_one()
+        if self._name == "sale.order.line" or (
+            self._name == "account.move.line"
+            and self.move_id.is_sale_document(include_receipts=True)
+        ):
+            return "sale"
+        if self._name == "purchase.order.line" or (
+            self._name == "account.move.line"
+            and self.move_id.is_purchase_document(include_receipts=True)
+        ):
+            return "purchase"
+        return None
+
+    def _get_secondary_uom_hide_col(self):
+        """Return whether secondary UoM column should be hidden on reports."""
+        self.ensure_one()
+        if not self.secondary_uom_id:
+            return True
+        report_type = self._get_secondary_uom_report_type()
+        if report_type == "purchase":
+            return self.company_id.hide_secondary_uom_column_purchase
+        if report_type == "sale":
+            return self.company_id.hide_secondary_uom_column_sale
+        return True
+
+    def get_secondary_uom_display_mode(self):
+        """Return display mode for secondary UoM price on reports."""
+        self.ensure_one()
+        if not self.secondary_uom_id:
+            return "primary"
+        report_type = self._get_secondary_uom_report_type()
+        if report_type == "purchase":
+            return self.company_id.secondary_uom_price_display_purchase
+        if report_type == "sale":
+            return self.company_id.secondary_uom_price_display_sale
+        return "primary"
+
+    def report_show_price_uom(self, uom_source=None):
+        """Return True if UoM should be shown in price column.
+
+        UoM is shown when the line displays multiple UoMs.
+        """
+        self.ensure_one()
+        if not self.secondary_uom_id:
+            return False
+        hide_col = self._get_secondary_uom_hide_col()
+        display_mode = self.get_secondary_uom_display_mode()
+        if uom_source == "primary_uom" and display_mode == "secondary":
+            return False
+        return not hide_col or display_mode == "both"
