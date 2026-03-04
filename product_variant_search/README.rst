@@ -28,8 +28,13 @@ Product Variant Search
 
 |badge1| |badge2| |badge3| |badge4| |badge5|
 
-This module improves product variant searching by matching the product
-display name across all product selection fields.
+This module improves product variant searching by matching the variant
+display name (including attribute values) across all product selection
+fields.
+
+It ensures attribute values shown in the variant name (e.g., “Red”,
+“XL”, “128GB”) are consistently searchable, reducing friction when
+selecting the correct variant.
 
 For flexibility in this module’s ``name_search``, it can be used
 together with
@@ -40,8 +45,8 @@ together with
 .. contents::
    :local:
 
-Known issues / Roadmap
-======================
+Installation
+============
 
 On installation, post_init_hook assigns search_name for up to 20,000
 products (hard cap) to avoid performance issues in huge DBs. Any

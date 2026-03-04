@@ -370,15 +370,19 @@ ul.auto-toc {
 !! source digest: sha256:b5047013150535a35b749b6d762e3d78493e59a95e1e6f8e482018041157fb67
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
 <p><a class="reference external image-reference" href="https://odoo-community.org/page/development-status"><img alt="Beta" src="https://img.shields.io/badge/maturity-Beta-yellow.png" /></a> <a class="reference external image-reference" href="http://www.gnu.org/licenses/agpl-3.0-standalone.html"><img alt="License: AGPL-3" src="https://img.shields.io/badge/licence-AGPL--3-blue.png" /></a> <a class="reference external image-reference" href="https://github.com/OCA/product-variant/tree/18.0/product_variant_search"><img alt="OCA/product-variant" src="https://img.shields.io/badge/github-OCA%2Fproduct--variant-lightgray.png?logo=github" /></a> <a class="reference external image-reference" href="https://translation.odoo-community.org/projects/product-variant-18-0/product-variant-18-0-product_variant_search"><img alt="Translate me on Weblate" src="https://img.shields.io/badge/weblate-Translate%20me-F47D42.png" /></a> <a class="reference external image-reference" href="https://runboat.odoo-community.org/builds?repo=OCA/product-variant&amp;target_branch=18.0"><img alt="Try me on Runboat" src="https://img.shields.io/badge/runboat-Try%20me-875A7B.png" /></a></p>
-<p>This module improves product variant searching by matching the product
-display name across all product selection fields.</p>
+<p>This module improves product variant searching by matching the variant
+display name (including attribute values) across all product selection
+fields.</p>
+<p>It ensures attribute values shown in the variant name (e.g., “Red”,
+“XL”, “128GB”) are consistently searchable, reducing friction when
+selecting the correct variant.</p>
 <p>For flexibility in this module’s <tt class="docutils literal">name_search</tt>, it can be used
 together with
 <tt class="docutils literal">`base_name_search_improved</tt> &lt;<a class="reference external" href="https://github.com/OCA/server-tools/tree/18.0/base_name_search_improved">https://github.com/OCA/server-tools/tree/18.0/base_name_search_improved</a>&gt;`__.</p>
 <p><strong>Table of contents</strong></p>
 <div class="contents local topic" id="contents">
 <ul class="simple">
-<li><a class="reference internal" href="#known-issues-roadmap" id="toc-entry-1">Known issues / Roadmap</a></li>
+<li><a class="reference internal" href="#installation" id="toc-entry-1">Installation</a></li>
 <li><a class="reference internal" href="#bug-tracker" id="toc-entry-2">Bug Tracker</a></li>
 <li><a class="reference internal" href="#credits" id="toc-entry-3">Credits</a><ul>
 <li><a class="reference internal" href="#authors" id="toc-entry-4">Authors</a></li>
@@ -388,8 +392,8 @@ together with
 </li>
 </ul>
 </div>
-<div class="section" id="known-issues-roadmap">
-<h1><a class="toc-backref" href="#toc-entry-1">Known issues / Roadmap</a></h1>
+<div class="section" id="installation">
+<h1><a class="toc-backref" href="#toc-entry-1">Installation</a></h1>
 <p>On installation, post_init_hook assigns search_name for up to 20,000
 products (hard cap) to avoid performance issues in huge DBs. Any
 remaining products must be processed by the “Assign product search name”
