@@ -55,10 +55,14 @@ pre-checked in the import preview. You can toggle any field on or off
 before importing, regardless of whether a rule exists.
 
 When match-only fields are selected in the UI, matching uses all
-selected fields together to search for a single existing record. Note
-that conditional rules (fields with a required imported value) are only
-applied during programmatic imports; the UI-driven matching uses the
-selected fields unconditionally.
+selected fields together to search for a single existing record. If any
+row fails to match exactly one record (zero or multiple matches), the
+entire import is blocked and errors are shown for the affected rows.
+This prevents accidental creation of duplicate records.
+
+Note that conditional rules (fields with a required imported value) are
+only applied during programmatic imports; the UI-driven matching uses
+the selected fields unconditionally.
 
 For programmatic imports (without UI), the configured rules are used
 instead. The import logic in that case is:
@@ -136,7 +140,9 @@ To use this module, you need to:
 3. In the import preview, check **Match** on the fields you want to use
    as matching keys (e.g. name, email, VAT). These fields will be used
    to find existing records but will not be written.
-4. Proceed with the import as usual.
+4. Proceed with the import as usual. If any row cannot be matched to
+   exactly one existing record, the import will be blocked and error
+   messages will indicate which rows had zero or multiple matches.
 
 If Import Match rules are configured for the model, their fields will be
 pre-checked automatically.
@@ -144,8 +150,10 @@ pre-checked automatically.
 Known issues / Roadmap
 ======================
 
--  Add a setting to throw an error when multiple matches are found,
-   instead of falling back to creation of new record.
+-  Add a setting to throw an error when multiple matches are found
+   during programmatic imports, instead of falling back to creation of
+   new record. (UI-driven imports already block on zero or multiple
+   matches.)
 -  Support matching on child record fields (one2many subfields) in the
    import preview. Currently, matching only works for direct fields of
    the imported model.

@@ -1,7 +1,7 @@
 # Copyright 2017 Jairo Llopis <jairo.llopis@tecnativa.com>
 # Copyright 2026 Quartile (https://www.quartile.co)
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
-from odoo import api, models
+from odoo import _, api, models
 
 
 class Base(models.AbstractModel):
@@ -9,7 +9,11 @@ class Base(models.AbstractModel):
 
     @api.model
     def _match_by_fields(self, match_fields, converted_row, imported_row):
-        """Find a single existing record matching on the given fields."""
+        """Find existing records matching on the given fields.
+
+        Return a ``(recordset, count)`` tuple. When exactly one record matches,
+        *recordset* is that record; otherwise it is an empty record.
+        """
         domain = []
         for fname in match_fields & converted_row.keys():
             value = converted_row[fname]
@@ -22,9 +26,30 @@ class Base(models.AbstractModel):
             else:
                 domain.append((fname, "=", value))
         if not domain:
-            return self
-        match = self.search(domain)
-        return match if len(match) == 1 else self
+            return self, 0
+        match = self.search(domain, limit=2)
+        if len(match) == 1:
+            return match, 1
+        return self, len(match)
+
+    @api.model
+    def _match_error(self, match_fields, row, record_index, count):
+        """Build an import error dict for a failed match attempt."""
+        criteria = ", ".join(f"{f}={row.get(f, '')}" for f in sorted(match_fields))
+        if count == 0:
+            msg = _("No matching record found for: %(criteria)s", criteria=criteria)
+        else:
+            msg = _(
+                "Multiple matching records found (expected 1) for: %(criteria)s",
+                criteria=criteria,
+            )
+        return {
+            "type": "error",
+            "message": msg,
+            "rows": {"from": record_index, "to": record_index},
+            "record": record_index,
+            "field": False,
+        }
 
     @api.model
     def load(self, fields, data):
@@ -44,6 +69,7 @@ class Base(models.AbstractModel):
         )
         if match_only_fields or has_rules:
             newdata = list()
+            match_errors = []
             # Change .id (dbid) by id (xmlid)
             if ".id" in fields:
                 column = fields.index(".id")
@@ -76,7 +102,13 @@ class Base(models.AbstractModel):
                     match = self.browse(dbid)
                 elif match_only_fields:
                     # Match using user-selected fields from the UI
-                    match = self._match_by_fields(match_only_fields, record, row)
+                    match, count = self._match_by_fields(match_only_fields, record, row)
+                    if count != 1:
+                        match_errors.append(
+                            self._match_error(
+                                match_only_fields, row, info["record"], count
+                            )
+                        )
                 else:
                     # Store records that match a combination
                     match = self.env["base_import.match"]._match_find(self, record, row)
@@ -87,6 +119,8 @@ class Base(models.AbstractModel):
                 row["id"] = ext_id[match.id] if match else row.get("id", "")
                 # Store the modified row, in the same order as fields
                 newdata.append(tuple(row[f] for f in clean_fields))
+            if match_errors:
+                return {"ids": False, "messages": match_errors, "nextrow": False}
             # We will import the patched data to get updates on matches
             data = newdata
             # Rebuild fields/data without match-only columns.

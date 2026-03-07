@@ -25,9 +25,13 @@ the import preview. You can toggle any field on or off before importing, regardl
 whether a rule exists.
 
 When match-only fields are selected in the UI, matching uses all selected fields
-together to search for a single existing record. Note that conditional rules (fields
-with a required imported value) are only applied during programmatic imports; the
-UI-driven matching uses the selected fields unconditionally.
+together to search for a single existing record. If any row fails to match exactly one
+record (zero or multiple matches), the entire import is blocked and errors are shown for
+the affected rows. This prevents accidental creation of duplicate records.
+
+Note that conditional rules (fields with a required imported value) are only applied
+during programmatic imports; the UI-driven matching uses the selected fields
+unconditionally.
 
 For programmatic imports (without UI), the configured rules are used instead. The import
 logic in that case is:
