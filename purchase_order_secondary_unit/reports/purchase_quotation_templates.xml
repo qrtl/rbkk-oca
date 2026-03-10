@@ -4,12 +4,12 @@
         id="report_purchasequotation_document"
         inherit_id="purchase.report_purchasequotation_document"
     >
-        <!-- Header: Second Qty column (hidden when hide_secondary_uom_column is True) -->
+        <!-- Header: Second Qty column (hidden when hide_secondary_uom_column() is True) -->
         <th name="th_quantity" position="before">
             <th
                 name="secondary_unit"
                 class="text-end"
-                t-if="not o.company_id.hide_secondary_uom_column"
+                t-if="not o.company_id.hide_secondary_uom_column(o)"
             >
                 <strong>Second Qty</strong>
             </th>
@@ -19,7 +19,7 @@
             <td
                 id="secondary_unit"
                 class="text-end"
-                t-if="not o.company_id.hide_secondary_uom_column"
+                t-if="not o.company_id.hide_secondary_uom_column(o)"
             >
                 <span t-field="order_line.secondary_uom_qty" />
                 <span t-field="order_line.secondary_uom_id" />
@@ -47,7 +47,7 @@
         <xpath expr="//span[@t-field='order_line.product_qty']/.." position="inside">
             <t t-if="order_line.get_secondary_uom_display_mode() == 'both'">
                 <br />
-                <span class="text-muted">
+                <span id="secondary_uom_qty" class="text-muted">
                     (<span t-field="order_line.secondary_uom_qty" />
                     <span
                     t-field="order_line.secondary_uom_id.name"

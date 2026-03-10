@@ -86,18 +86,11 @@ class PurchaseOrderLine(models.Model):
             self.secondary_uom_qty = 1.0
         return res
 
-    def get_secondary_uom_display_mode(self):
-        if not self.secondary_uom_id:
-            return "primary"
-        return self.order_id.company_id.secondary_uom_price_display or "primary"
-
-    def report_show_price_uom(self):
-        """Return True if UoM should be shown in price column.
-
-        UoM is shown when the line displays multiple UoMs.
-        """
-        if not self.secondary_uom_id:
-            return False
-        hide_col = self.order_id.company_id.hide_secondary_uom_column
-        display = self.order_id.company_id.secondary_uom_price_display
-        return not hide_col or display == "both"
+    def _prepare_account_move_line(self, move=False):
+        # Set secondary UoM values only when account_move_secondary_unit is installed
+        # (i.e., the fields exist on account.move.line).
+        res = super()._prepare_account_move_line(move)
+        aml_fields = self.env["account.move.line"]._fields
+        if "secondary_uom_id" in aml_fields and self.secondary_uom_id:
+            res["secondary_uom_id"] = self.secondary_uom_id.id
+        return res
