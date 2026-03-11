@@ -4,170 +4,93 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 18.0+e\n"
+"Project-Id-Version: Odoo Server 14.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-12 04:21+0000\n"
-"PO-Revision-Date: 2026-01-12 04:21+0000\n"
-"Last-Translator: \n"
-"Language-Team: \n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: ja\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
-"Plural-Forms: \n"
+"Plural-Forms: nplurals=1; plural=0;\n"
 
 #. module: purchase_order_secondary_unit
+#: model_terms:ir.ui.view,arch_db:purchase_order_secondary_unit.purchase_order_portal_content_secondary_uom
 #: model_terms:ir.ui.view,arch_db:purchase_order_secondary_unit.report_purchaseorder_document
 #: model_terms:ir.ui.view,arch_db:purchase_order_secondary_unit.report_purchasequotation_document
 msgid "<strong>Second Qty</strong>"
-msgstr "<strong>数量(副単位)</strong>"
-
-#. module: purchase_order_secondary_unit
-#: model:ir.model.fields.selection,name:purchase_order_secondary_unit.selection__res_company__secondary_uom_price_display__both
-msgid "Both Primary and Secondary Unit Prices"
-msgstr "主単位単価と副単位単価の両方"
-
-#. module: purchase_order_secondary_unit
-#: model:ir.model,name:purchase_order_secondary_unit.model_res_company
-msgid "Companies"
-msgstr "会社"
-
-#. module: purchase_order_secondary_unit
-#: model:ir.model,name:purchase_order_secondary_unit.model_res_config_settings
-msgid "Config Settings"
-msgstr "コンフィグ設定"
-
-#. module: purchase_order_secondary_unit
-#: model_terms:ir.ui.view,arch_db:purchase_order_secondary_unit.res_config_settings_view_form
-msgid ""
-"Configure how unit prices and quantities are shown in reports when secondary"
-" units are used"
-msgstr "副単位使用時の帳票における単価と数量の表示方法を設定します"
-
-#. module: purchase_order_secondary_unit
-#: model:ir.model.fields,help:purchase_order_secondary_unit.field_res_company__secondary_uom_price_display
-#: model:ir.model.fields,help:purchase_order_secondary_unit.field_res_config_settings__secondary_uom_price_display
-msgid ""
-"Configure how unit prices are displayed in purchase reports when secondary units are used.\n"
-"- Primary Unit Price Only: Shows only the primary unit price\n"
-"- Prioritize Secondary Unit Price: Shows secondary unit price when available, falls back to primary otherwise\n"
-"- Both: Shows both prices (primary and secondary)"
 msgstr ""
-"副単位使用時の購買帳票における単価の表示方法を設定します。\n"
-"- 主単位単価のみ: 主単位単価のみを表示\n"
-"- 副単位単価を優先: 副単位単価がある場合は副単位単価を表示、ない場合は主単位単価を表示\n"
-"- 両方: 両方の単価(主単位と副単位)を表示"
 
 #. module: purchase_order_secondary_unit
 #: model:ir.model.fields,field_description:purchase_order_secondary_unit.field_product_product__purchase_secondary_uom_id
 #: model:ir.model.fields,field_description:purchase_order_secondary_unit.field_product_template__purchase_secondary_uom_id
 msgid "Default secondary unit for purchases"
-msgstr "購買のデフォルト副単位"
-
-#. module: purchase_order_secondary_unit
-#: model:ir.model.fields,field_description:purchase_order_secondary_unit.field_res_company__hide_secondary_uom_column
-#: model:ir.model.fields,field_description:purchase_order_secondary_unit.field_res_config_settings__hide_secondary_uom_column
-msgid "Hide Secondary UoM Column"
-msgstr "副単位列を非表示"
-
-#. module: purchase_order_secondary_unit
-#: model_terms:ir.ui.view,arch_db:purchase_order_secondary_unit.res_config_settings_view_form
-msgid ""
-"If selected, the 'Second Qty' column will be hidden in purchase order and "
-"quotation reports."
-msgstr "選択すると、購買オーダおよび見積依頼帳票で「数量(副単位)」列が非表示になります。"
+msgstr ""
 
 #. module: purchase_order_secondary_unit
 #: model:ir.model.fields,help:purchase_order_secondary_unit.field_product_product__purchase_secondary_uom_id
 msgid ""
 "In order to set a value, please first add at least one record in 'Secondary "
 "Unit of Measure'"
-msgstr "値を設定するには、まず「副単位」に少なくとも1つのレコードを追加してください"
+msgstr ""
 
 #. module: purchase_order_secondary_unit
 #: model:ir.model.fields,field_description:purchase_order_secondary_unit.field_purchase_order_line__product_packaging_id
 msgid "Packaging"
-msgstr "パッケージング"
+msgstr ""
 
 #. module: purchase_order_secondary_unit
 #: model:ir.model.fields,field_description:purchase_order_secondary_unit.field_purchase_order_line__product_packaging_qty
 msgid "Packaging Quantity"
-msgstr "パッケージング数量"
-
-#. module: purchase_order_secondary_unit
-#: model:ir.model.fields.selection,name:purchase_order_secondary_unit.selection__res_company__secondary_uom_price_display__primary
-msgid "Primary Unit Price Only"
-msgstr "主単位単価のみ"
-
-#. module: purchase_order_secondary_unit
-#: model:ir.model.fields.selection,name:purchase_order_secondary_unit.selection__res_company__secondary_uom_price_display__secondary
-msgid "Prioritize Secondary Unit Price"
-msgstr "副単位単価を優先"
+msgstr ""
 
 #. module: purchase_order_secondary_unit
 #: model:ir.model,name:purchase_order_secondary_unit.model_product_template
 msgid "Product"
-msgstr "プロダクト"
+msgstr ""
 
 #. module: purchase_order_secondary_unit
 #: model:ir.model,name:purchase_order_secondary_unit.model_product_product
 msgid "Product Variant"
-msgstr "プロダクトバリアント"
+msgstr ""
 
 #. module: purchase_order_secondary_unit
 #: model:ir.model,name:purchase_order_secondary_unit.model_purchase_order
 msgid "Purchase Order"
-msgstr "購買オーダ"
+msgstr ""
 
 #. module: purchase_order_secondary_unit
 #: model:ir.model,name:purchase_order_secondary_unit.model_purchase_order_line
 msgid "Purchase Order Line"
-msgstr "購買オーダ明細"
+msgstr ""
 
 #. module: purchase_order_secondary_unit
 #: model:ir.model.fields,field_description:purchase_order_secondary_unit.field_purchase_order_line__product_qty
 msgid "Quantity"
-msgstr "数量"
+msgstr ""
 
 #. module: purchase_order_secondary_unit
 #: model:ir.model.fields,field_description:purchase_order_secondary_unit.field_purchase_order_line__secondary_uom_id
 msgid "Second unit"
-msgstr "副単位"
+msgstr ""
 
 #. module: purchase_order_secondary_unit
 #: model:ir.model.fields,field_description:purchase_order_secondary_unit.field_product_supplierinfo__secondary_uom_price
 #: model:ir.model.fields,field_description:purchase_order_secondary_unit.field_purchase_order_line__secondary_uom_price
 msgid "Secondary Price"
-msgstr "副単位単価"
+msgstr ""
 
 #. module: purchase_order_secondary_unit
 #: model:ir.model.fields,field_description:purchase_order_secondary_unit.field_purchase_order_line__secondary_uom_qty
 msgid "Secondary Qty"
-msgstr "副単位数量"
+msgstr ""
 
 #. module: purchase_order_secondary_unit
 #: model:ir.model.fields,field_description:purchase_order_secondary_unit.field_product_supplierinfo__secondary_uom_id
 msgid "Secondary Unit"
-msgstr "副単位"
-
-#. module: purchase_order_secondary_unit
-#: model:ir.model.fields,field_description:purchase_order_secondary_unit.field_res_company__secondary_uom_price_display
-#: model:ir.model.fields,field_description:purchase_order_secondary_unit.field_res_config_settings__secondary_uom_price_display
-#: model_terms:ir.ui.view,arch_db:purchase_order_secondary_unit.res_config_settings_view_form
-msgid "Secondary Unit Price Display"
-msgstr "副単位単価表示"
+msgstr ""
 
 #. module: purchase_order_secondary_unit
 #: model:ir.model,name:purchase_order_secondary_unit.model_product_supplierinfo
 msgid "Supplier Pricelist"
-msgstr "仕入先価格表"
-
-#. module: purchase_order_secondary_unit
-#: model:ir.model.fields,help:purchase_order_secondary_unit.field_res_company__hide_secondary_uom_column
-#: model:ir.model.fields,help:purchase_order_secondary_unit.field_res_config_settings__hide_secondary_uom_column
-msgid ""
-"When enabled, hides the separate Secondary Qty column in purchase reports. "
-"The secondary quantity will still be shown in the main Qty column based on "
-"the 'Secondary Unit Price Display' setting."
 msgstr ""
-"有効にすると、購買帳票の副単位数量列が非表示になります。"
-"副単位数量は「副単位単価表示」設定に基づき、標準の数量カラムに表示されます。"
