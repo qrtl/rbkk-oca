@@ -1,5 +1,5 @@
 # Do NOT update manually; changes here will be overwritten by Copier
-_commit: v1.35
+_commit: v1.39
 _src_path: https://github.com/OCA/oca-addons-repo-template.git
 additional_ruff_rules: []
 ci: GitHub
@@ -17,7 +17,8 @@ odoo_test_flavor: OCB
 odoo_version: 18.0
 org_name: Odoo Community Association (OCA)
 org_slug: qrtl
-rebel_module_groups: []
+rebel_module_groups:
+- mail_post_defer
 repo_description: ''
 repo_name: RBKK OCA
 repo_slug: rbkk-oca

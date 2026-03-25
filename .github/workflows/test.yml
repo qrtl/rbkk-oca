@@ -36,6 +36,11 @@ jobs:
       matrix:
         include:
           - container: ghcr.io/oca/oca-ci/py3.10-ocb18.0:latest
+            include: "mail_post_defer"
+            name: test with OCB
+            makepot: "false"
+          - container: ghcr.io/oca/oca-ci/py3.10-ocb18.0:latest
+            exclude: "mail_post_defer"
             name: test with OCB
             makepot: "false"
     services:
@@ -47,6 +52,9 @@ jobs:
           POSTGRES_DB: odoo
         ports:
           - 5432:5432
+    env:
+      INCLUDE: "${{ matrix.include }}"
+      EXCLUDE: "${{ matrix.exclude }}"
     steps:
       - uses: actions/checkout@v4
         with:
@@ -62,6 +70,13 @@ jobs:
         run: oca_init_test_database
       - name: Run tests
         run: oca_run_tests
+      - name: Upload screenshots from JS tests
+        uses: actions/upload-artifact@v4
+        if: ${{ failure() }}
+        with:
+          name: Screenshots of failed JS tests - ${{ matrix.name }}${{ join(matrix.include) }}
+          path: /tmp/odoo_tests/${{ env.PGDATABASE }}
+          if-no-files-found: ignore
       - name: Update .pot files
         run: oca_export_and_push_pot https://x-access-token:${{ secrets.GIT_PUSH_TOKEN }}@github.com/${{ github.repository }}
         if: ${{ matrix.makepot == 'true' && github.event_name == 'push' && github.repository_owner == 'qrtl' }}
