@@ -6,13 +6,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 18.0\n"
 "Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-03-25 14:47+0000\n"
+"PO-Revision-Date: 2026-03-25 14:47+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
-"Language: ja\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
-"Plural-Forms: nplurals=1; plural=0;\n"
+"Plural-Forms: \n"
 
 #. module: mail_post_defer
 #. odoo-python
@@ -28,7 +29,7 @@ msgstr "Eメールスレッド"
 #. module: mail_post_defer
 #: model:ir.model,name:mail_post_defer.model_mail_compose_message
 msgid "Email composition wizard"
-msgstr "メール作成アシスタント"
+msgstr "メール作成ウィザード"
 
 #. module: mail_post_defer
 #: model:ir.model,name:mail_post_defer.model_mail_message
@@ -45,3 +46,11 @@ msgstr "コメントタイプのメッセージのみ内容を更新できます
 #: model:ir.model,name:mail_post_defer.model_mail_message_schedule
 msgid "Scheduled Messages"
 msgstr "送信予約済メッセージ"
+
+#. module: mail_post_defer
+#: model:ir.model.fields,field_description:mail_post_defer.field_mail_compose_message__smart_search
+#: model:ir.model.fields,field_description:mail_post_defer.field_mail_message__smart_search
+#: model:ir.model.fields,field_description:mail_post_defer.field_mail_message_schedule__smart_search
+#: model:ir.model.fields,field_description:mail_post_defer.field_mail_thread__smart_search
+msgid "Smart Search"
+msgstr "スマートサーチ"
