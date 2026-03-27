@@ -83,4 +83,4 @@ msgstr "スマートサーチ"
 #. module: mrp_stock_analytic
 #: model:ir.model,name:mrp_stock_analytic.model_mrp_account_wip_accounting
 msgid "Wizard to post Manufacturing WIP account move"
-msgstr "製造のWIP勘定の仕訳を投稿するウィザード"
+msgstr "製造のWIP勘定の仕訳を記帳するウィザード"
