@@ -1,4 +1,2 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_hr_attendance_own_manager,hr.attendance.own_manager,model_hr_attendance,hr_attendance_manage_own.group_hr_attendance_own_manager,1,1,1,0
-access_hr_attendance_disallowed_field_user,hr.attendance.disallowed.field.user,model_hr_attendance_disallowed_field,base.group_user,1,0,0,0
-access_hr_attendance_disallowed_field_manager,hr.attendance.disallowed.field.manager,model_hr_attendance_disallowed_field,hr_attendance.group_hr_attendance_manager,1,1,1,1
+access_hr_attendance_own_manager,hr.attendance.own_manager,model_hr_attendance,hr_attendance_manage_own.group_hr_attendance_own_manager,1,1,1,1

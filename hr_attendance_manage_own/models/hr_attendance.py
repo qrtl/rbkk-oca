@@ -8,90 +8,63 @@ from odoo.exceptions import AccessError
 class HrAttendance(models.Model):
     _inherit = "hr.attendance"
 
-    @api.model
-    def _get_disallowed_fields(self):
-        disallowed = self.env["hr.attendance.disallowed.field"].search([])
-        return {rec.field_name for rec in disallowed if rec.field_name}
-
-    def _is_attendance_manager_for_records(self):
+    def _is_attendance_manager_for_employees(self, employees):
         return self.env.user.has_group(
             "hr_attendance.group_hr_attendance_officer"
-        ) and all(
-            rec.employee_id.attendance_manager_id.id == self.env.uid for rec in self
-        )
+        ) and all(emp.attendance_manager_id.id == self.env.uid for emp in employees)
 
-    @api.model
-    def check_field_access_rights(self, operation, field_names):
-        valid_fields = super().check_field_access_rights(operation, field_names)
-        if (
-            self.env.su
-            or operation != "write"
-            or self.env.context.get("skip_attendance_field_check")
-            or not self.env.user.has_group(
-                "hr_attendance_manage_own.group_hr_attendance_own_manager"
-            )
-            or self.env.user.has_group("hr_attendance.group_hr_attendance_manager")
-        ):
-            return valid_fields
-        disallowed_fields = self._get_disallowed_fields()
-        field_names_set = set(field_names) if field_names else set()
-        forbidden = disallowed_fields.intersection(field_names_set)
-        if forbidden:
-            field_labels = [
-                self._fields[f].string for f in sorted(forbidden) if f in self._fields
-            ]
-            raise AccessError(
-                _("You are not allowed to modify the following fields: %s")
-                % ", ".join(field_labels)
-            )
-        return valid_fields
-
-    @api.model_create_multi
-    def create(self, vals_list):
-        own_manager = self.env.user.has_group(
+    def _is_own_manager_only(self):
+        return self.env.user.has_group(
             "hr_attendance_manage_own.group_hr_attendance_own_manager"
+        ) and not self.env.user.has_group("hr_attendance.group_hr_attendance_manager")
+
+    def _is_processed(self):
+        return (
+            self.overtime_status != "to_approve"
+            and self.employee_id.company_id.attendance_overtime_validation
+            != "no_validation"
         )
-        is_manager = self.env.user.has_group(
-            "hr_attendance.group_hr_attendance_manager"
-        )
-        if not own_manager or is_manager:
-            return super().create(vals_list)
-        for vals in vals_list:
-            temp_record = self.env["hr.attendance"].new(vals)
-            if temp_record._is_attendance_manager_for_records():
+
+    @api.constrains("overtime_status")
+    def _check_overtime_status(self):
+        if self.env.su or not self._is_own_manager_only():
+            return
+        for record in self:
+            if record._is_attendance_manager_for_employees(record.employee_id):
                 continue
-            if (
-                temp_record.employee_id.company_id.attendance_overtime_validation
-                == "by_manager"
-                and vals.get("overtime_status")
-                and vals["overtime_status"] != "to_approve"
-            ):
+            if record._is_processed():
                 raise AccessError(
-                    _(
-                        "You can only create attendance records with"
-                        " 'To Approve' status."
-                    )
+                    _("You are not allowed to change the overtime status.")
                 )
-        return super().create(vals_list)
 
     def write(self, vals):
-        if self._is_attendance_manager_for_records():
-            return super(
-                HrAttendance, self.with_context(skip_attendance_field_check=True)
-            ).write(vals)
-        own_manager = self.env.user.has_group(
-            "hr_attendance_manage_own.group_hr_attendance_own_manager"
-        )
-        is_manager = self.env.user.has_group(
-            "hr_attendance.group_hr_attendance_manager"
-        )
-        if own_manager and not is_manager:
-            records = self.filtered(lambda r: r.overtime_status != "to_approve")
-            if records:
+        if not self._is_own_manager_only():
+            return super().write(vals)
+        if self._is_attendance_manager_for_employees(self.employee_id):
+            return super().write(vals)
+        if self.filtered(lambda r: r._is_processed()):
+            raise AccessError(
+                _(
+                    "You cannot modify attendance records that have already "
+                    "been processed (approved or refused)."
+                )
+            )
+        # Strip validated_overtime_hours so the compute determines its value.
+        # The form client may include it in the payload when saving.
+        vals = {k: v for k, v in vals.items() if k != "validated_overtime_hours"}
+        return super().write(vals)
+
+    @api.ondelete(at_uninstall=False)
+    def _unlink_check_processed(self):
+        if self.env.su or not self._is_own_manager_only():
+            return
+        for record in self:
+            if record._is_attendance_manager_for_employees(record.employee_id):
+                continue
+            if record._is_processed():
                 raise AccessError(
                     _(
-                        "You cannot modify attendance records that have already"
-                        " been processed (approved or refused)."
+                        "You cannot delete attendance records that have already "
+                        "been processed (approved or refused)."
                     )
                 )
-        return super().write(vals)

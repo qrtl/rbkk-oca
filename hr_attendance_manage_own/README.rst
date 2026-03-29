@@ -29,8 +29,7 @@ HR Attendance Own Management
 |badge1| |badge2| |badge3| |badge4| |badge5|
 
 This module allows users to create and edit their own attendance records
-without requiring attendance manager or officer privileges, with
-configurable field-level restrictions.
+without requiring attendance manager or officer privileges.
 
 Without this module, regular internal users can only read their own
 attendance records. Creating or modifying attendance records requires
@@ -38,13 +37,15 @@ either the Attendance Manager role (full access to all records) or the
 Attendance Officer role with the employee's attendance manager set to
 that user.
 
-This module introduces an "Own Manager" group that can create and edit
-attendance records, except for fields configured as disallowed. The
-overtime_status field is disallowed by default. Additionally, when the
-company overtime validation is set to 'by_manager', overtime_status must
-be set to 'To Approve' when creating records (if company uses
-auto-approval, there is no validation). Attendance records that have
-been approved or refused cannot be modified.
+This module introduces a "User: Manage own attendances" group that
+grants create and edit access to the user's own attendance records, with
+the following restrictions:
+
+-  Users cannot change the overtime status or extra hours of their
+   records.
+-  When the company's extra hours validation is set to "By Manager",
+   records that have been approved or refused cannot be modified or
+   deleted.
 
 **Table of contents**
 
@@ -57,13 +58,9 @@ Configuration
 To configure this module:
 
 1. Go to *Settings > Users & Companies > Groups*
-2. Find and select the "Own Manager: Manage own attendance records"
-   group
+2. Find and select the "User: Manage own attendances" group
 3. Add users to this group to allow them to create and edit their own
    attendance records
-4. Go to *Attendances > Disallowed Fields*
-5. Add fields that users in the "Own Manager" group should NOT be able
-   to edit The overtime_status field is disallowed by default
 
 Bug Tracker
 ===========

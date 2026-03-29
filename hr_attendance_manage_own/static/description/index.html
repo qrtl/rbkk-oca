@@ -8,11 +8,10 @@
 
 /*
 :Author: David Goodger (goodger@python.org)
-:Id: $Id: html4css1.css 9511 2024-01-13 09:50:07Z milde $
+:Id: $Id: html4css1.css 8954 2022-01-20 10:10:25Z milde $
 :Copyright: This stylesheet has been placed in the public domain.
 
 Default cascading style sheet for the HTML output of Docutils.
-Despite the name, some widely supported CSS2 features are used.
 
 See https://docutils.sourceforge.io/docs/howto/html-stylesheets.html for how to
 customize this style sheet.
@@ -275,7 +274,7 @@ pre.literal-block, pre.doctest-block, pre.math, pre.code {
   margin-left: 2em ;
   margin-right: 2em }
 
-pre.code .ln { color: gray; } /* line numbers */
+pre.code .ln { color: grey; } /* line numbers */
 pre.code, code { background-color: #eeeeee }
 pre.code .comment, code .comment { color: #5C6576 }
 pre.code .keyword, code .keyword { color: #3B0D06; font-weight: bold }
@@ -301,7 +300,7 @@ span.option {
 span.pre {
   white-space: pre }
 
-span.problematic, pre.problematic {
+span.problematic {
   color: red }
 
 span.section-subtitle {
@@ -371,20 +370,22 @@ ul.auto-toc {
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
 <p><a class="reference external image-reference" href="https://odoo-community.org/page/development-status"><img alt="Beta" src="https://img.shields.io/badge/maturity-Beta-yellow.png" /></a> <a class="reference external image-reference" href="http://www.gnu.org/licenses/agpl-3.0-standalone.html"><img alt="License: AGPL-3" src="https://img.shields.io/badge/licence-AGPL--3-blue.png" /></a> <a class="reference external image-reference" href="https://github.com/OCA/hr-attendance/tree/18.0/hr_attendance_manage_own"><img alt="OCA/hr-attendance" src="https://img.shields.io/badge/github-OCA%2Fhr--attendance-lightgray.png?logo=github" /></a> <a class="reference external image-reference" href="https://translation.odoo-community.org/projects/hr-attendance-18-0/hr-attendance-18-0-hr_attendance_manage_own"><img alt="Translate me on Weblate" src="https://img.shields.io/badge/weblate-Translate%20me-F47D42.png" /></a> <a class="reference external image-reference" href="https://runboat.odoo-community.org/builds?repo=OCA/hr-attendance&amp;target_branch=18.0"><img alt="Try me on Runboat" src="https://img.shields.io/badge/runboat-Try%20me-875A7B.png" /></a></p>
 <p>This module allows users to create and edit their own attendance records
-without requiring attendance manager or officer privileges, with
-configurable field-level restrictions.</p>
+without requiring attendance manager or officer privileges.</p>
 <p>Without this module, regular internal users can only read their own
 attendance records. Creating or modifying attendance records requires
 either the Attendance Manager role (full access to all records) or the
 Attendance Officer role with the employee’s attendance manager set to
 that user.</p>
-<p>This module introduces an “Own Manager” group that can create and edit
-attendance records, except for fields configured as disallowed. The
-overtime_status field is disallowed by default. Additionally, when the
-company overtime validation is set to ‘by_manager’, overtime_status must
-be set to ‘To Approve’ when creating records (if company uses
-auto-approval, there is no validation). Attendance records that have
-been approved or refused cannot be modified.</p>
+<p>This module introduces a “User: Manage own attendances” group that
+grants create and edit access to the user’s own attendance records, with
+the following restrictions:</p>
+<ul class="simple">
+<li>Users cannot change the overtime status or extra hours of their
+records.</li>
+<li>When the company’s extra hours validation is set to “By Manager”,
+records that have been approved or refused cannot be modified or
+deleted.</li>
+</ul>
 <p><strong>Table of contents</strong></p>
 <div class="contents local topic" id="contents">
 <ul class="simple">
@@ -403,13 +404,9 @@ been approved or refused cannot be modified.</p>
 <p>To configure this module:</p>
 <ol class="arabic simple">
 <li>Go to <em>Settings &gt; Users &amp; Companies &gt; Groups</em></li>
-<li>Find and select the “Own Manager: Manage own attendance records”
-group</li>
+<li>Find and select the “User: Manage own attendances” group</li>
 <li>Add users to this group to allow them to create and edit their own
 attendance records</li>
-<li>Go to <em>Attendances &gt; Disallowed Fields</em></li>
-<li>Add fields that users in the “Own Manager” group should NOT be able
-to edit The overtime_status field is disallowed by default</li>
 </ol>
 </div>
 <div class="section" id="bug-tracker">
@@ -441,9 +438,7 @@ If you spotted it first, help us to smash it by providing a detailed and welcome
 <div class="section" id="maintainers">
 <h2><a class="toc-backref" href="#toc-entry-6">Maintainers</a></h2>
 <p>This module is maintained by the OCA.</p>
-<a class="reference external image-reference" href="https://odoo-community.org">
-<img alt="Odoo Community Association" src="https://odoo-community.org/logo.png" />
-</a>
+<a class="reference external image-reference" href="https://odoo-community.org"><img alt="Odoo Community Association" src="https://odoo-community.org/logo.png" /></a>
 <p>OCA, or the Odoo Community Association, is a nonprofit organization whose
 mission is to support the collaborative development of Odoo features and
 promote its widespread use.</p>
