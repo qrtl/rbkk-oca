@@ -16,4 +16,5 @@
         "views/resource_calendar_views.xml",
     ],
     "installable": True,
+    "maintainers": ["kanda999", "AungKoKoLin1997"],
 }

@@ -20,47 +20,37 @@ class HrAttendance(models.Model):
         tracking=True,
         aggregator="sum",
     )
-    is_rest_time_readonly = fields.Boolean(
-        compute="_compute_is_rest_time_readonly",
-    )
+    is_rest_time_editable = fields.Boolean(compute="_compute_is_rest_time_editable")
 
     @api.depends("overtime_status", "employee_id.attendance_manager_id")
-    def _compute_is_rest_time_readonly(self):
-        is_manager = self.env.user.has_group(
-            "hr_attendance.group_hr_attendance_manager"
-        )
-        is_officer = self.env.user.has_group(
-            "hr_attendance.group_hr_attendance_officer"
-        )
-        for attendance in self:
+    def _compute_is_rest_time_editable(self):
+        user = self.env.user
+        is_manager = user.has_group("hr_attendance.group_hr_attendance_manager")
+        is_officer = user.has_group("hr_attendance.group_hr_attendance_officer")
+        for rec in self:
             if is_manager:
-                attendance.is_rest_time_readonly = False
+                rec.is_rest_time_editable = True
             elif is_officer:
-                is_attendance_manager = (
-                    attendance.employee_id.attendance_manager_id == self.env.user
+                rec.is_rest_time_editable = (
+                    rec.employee_id.attendance_manager_id == self.env.user
                 )
-                attendance.is_rest_time_readonly = not is_attendance_manager
             else:
-                attendance.is_rest_time_readonly = (
-                    attendance.overtime_status == "approved"
-                )
+                rec.is_rest_time_editable = rec.overtime_status != "approved"
 
     @api.depends("employee_id", "check_in", "check_out")
     def _compute_rest_time(self):
-        for attendance in self:
-            calendar = attendance._get_employee_calendar()
+        for rec in self:
+            calendar = rec._get_employee_calendar()
             if (
                 not calendar
                 or not calendar.flexible_hours
-                or not attendance.check_in
-                or not attendance.check_out
+                or not rec.check_in
+                or not rec.check_out
             ):
-                attendance.rest_time = 0.0
+                rec.rest_time = 0.0
                 continue
-            gross_hours = attendance._get_worked_hours_in_range(
-                attendance.check_in, attendance.check_out
-            )
-            attendance.rest_time = calendar._get_rest_time(gross_hours)
+            gross_hours = rec._get_worked_hours_in_range(rec.check_in, rec.check_out)
+            rec.rest_time = calendar._get_rest_time(gross_hours)
 
     def _inverse_rest_time(self):
         self._update_overtime()
@@ -68,42 +58,38 @@ class HrAttendance(models.Model):
     @api.depends("check_in", "check_out", "rest_time", "employee_id")
     def _compute_worked_hours(self):
         res = super()._compute_worked_hours()
-        for attendance in self.filtered(lambda a: a.worked_hours and a.rest_time):
-            attendance.worked_hours -= attendance.rest_time
+        for rec in self.filtered(lambda r: r.rest_time):
+            rec.worked_hours -= rec.rest_time
         return res
-
-    def _get_pre_post_work_time(self, employee, working_times, attendance_date):
-        """Subtract rest_time from work_duration so overtime is computed on net
-        worked hours rather than gross (check-out − check-in) hours."""
-        pre, work, post, planned = super()._get_pre_post_work_time(
-            employee, working_times, attendance_date
-        )
-        total_rest = sum(self.mapped("rest_time"))
-        return pre, work - total_rest, post, planned
 
     @api.constrains("rest_time")
     def _check_rest_time_positive(self):
-        for record in self:
-            if record.rest_time < 0:
-                raise ValidationError(
-                    _("Rest time must be greater than or equal to 0.")
-                )
+        for rec in self:
+            if rec.rest_time < 0:
+                raise ValidationError(_("Rest time cannot be negative."))
 
     @api.constrains("rest_time", "check_in", "check_out")
     def _check_rest_time_not_exceed_gross_time(self):
-        for record in self:
-            if not (record.check_in and record.check_out and record.rest_time):
+        for rec in self:
+            if not (rec.check_in and rec.check_out and rec.rest_time):
                 continue
-            gross_hours = record._get_worked_hours_in_range(
-                record.check_in, record.check_out
-            )
-            if record.rest_time > gross_hours:
+            gross_hours = rec._get_worked_hours_in_range(rec.check_in, rec.check_out)
+            if rec.rest_time > gross_hours:
                 raise ValidationError(
                     _(
                         "Rest time (%(rest).2f hours) cannot exceed the total"
                         " time between check in and check out"
                         " (%(gross).2f hours).",
-                        rest=record.rest_time,
+                        rest=rec.rest_time,
                         gross=gross_hours,
                     )
                 )
+
+    def _get_pre_post_work_time(self, employee, working_times, attendance_date):
+        """Subtract rest_time from work_duration so overtime is computed on net worked
+        hours rather than gross (check-out - check-in) hours."""
+        pre, work, post, planned = super()._get_pre_post_work_time(
+            employee, working_times, attendance_date
+        )
+        total_rest = sum(self.mapped("rest_time"))
+        return pre, work - total_rest, post, planned

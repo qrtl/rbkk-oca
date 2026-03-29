@@ -7,11 +7,11 @@
         <field name="arch" type="xml">
             <xpath expr="//field[@name='worked_hours']" position="after">
                 <field name="is_calendar_flexible" invisible="1" />
-                <field name="is_rest_time_readonly" invisible="1" />
+                <field name="is_rest_time_editable" invisible="1" />
                 <field
                     name="rest_time"
                     widget="float_time"
-                    readonly="is_rest_time_readonly"
+                    readonly="not is_rest_time_editable"
                     invisible="not is_calendar_flexible"
                 />
             </xpath>

@@ -13,15 +13,12 @@ class ResourceCalendarRestTimeRule(models.Model):
         (
             "unique_calendar_min_hours",
             "unique(calendar_id, min_hours)",
-            "A rule with the same minimum hours already exists for this calendar. "
-            "Each minimum hours threshold must be unique per calendar.",
+            "A rule with the same minimum hours already exists for this calendar.",
         ),
     ]
 
     calendar_id = fields.Many2one(
-        "resource.calendar",
-        required=True,
-        ondelete="cascade",
+        "resource.calendar", required=True, ondelete="cascade"
     )
     min_hours = fields.Float(
         required=True,
@@ -33,18 +30,14 @@ class ResourceCalendarRestTimeRule(models.Model):
         help="Rest time in hours to deduct when this rule applies.",
     )
 
-    @api.constrains("rest_time")
-    def _check_rest_time_positive(self):
-        for rule in self:
-            if rule.rest_time < 0:
-                raise ValidationError(
-                    _("Rest time must be greater than or equal to 0.")
-                )
-
     @api.constrains("min_hours")
     def _check_min_hours_positive(self):
         for rule in self:
             if rule.min_hours < 0:
-                raise ValidationError(
-                    _("Minimum hours must be greater than or equal to 0.")
-                )
+                raise ValidationError(_("Minimum hours cannot be negative."))
+
+    @api.constrains("rest_time")
+    def _check_rest_time_positive(self):
+        for rule in self:
+            if rule.rest_time < 0:
+                raise ValidationError(_("Rest time cannot be negative."))
