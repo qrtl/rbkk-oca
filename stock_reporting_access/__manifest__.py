@@ -14,6 +14,5 @@
         "security/security.xml",
         "views/stock_menu_views.xml",
     ],
-    "post_init_hook": "post_init_hook",
     "installable": True,
 }

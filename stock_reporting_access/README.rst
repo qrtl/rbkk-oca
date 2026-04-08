@@ -28,14 +28,13 @@ Stock Reporting Access
 
 |badge1| |badge2| |badge3| |badge4| |badge5|
 
-This module adds a new security group "User: Inventory Reporting Access"
-that grants access to the Inventory > Reporting menu and read-only
-access to stock valuation layers (if ``stock_account`` is installed).
+This module adds a new security group "Inventory Reporting Access" that
+grants access to the Inventory > Reporting menu.
 
 By default, only users with the Inventory Administrator role can access
-the Reporting menu and stock valuation data. This module allows you to
-grant reporting access to regular Inventory Users without giving them
-full administrator privileges.
+the Reporting menu. This module allows you to grant reporting access to
+regular Inventory Users without giving them full administrator
+privileges.
 
 **Table of contents**
 
@@ -48,22 +47,17 @@ Configuration
 To configure this module, you need to:
 
 1. Go to Settings > Users & Companies > Groups
-2. Search for "User: Inventory Reporting Access" in the Inventory
-   category
+2. Search for "Inventory Reporting Access" in the Inventory category
 3. Add users who should have access to inventory reporting to this group
 
-Known issues / Roadmap
-======================
-
 The ``stock.valuation.layer`` model is restricted to Inventory Managers
-by default. If ``stock_account`` is installed after this module, the
-access rights for ``stock.valuation.layer`` must be added manually:
+by default. If ``stock_account`` is installed, the access rights for
+``stock.valuation.layer`` should be added manually as necessary:
 
 1. Go to Settings > Technical > Models
 2. Search for ``stock.valuation.layer``
 3. Open the model and go to the Access Rights tab
-4. Add read-only permission for the "User: Inventory Reporting Access"
-   group
+4. Add read-only permission for the "Inventory Reporting Access" group
 
 Bug Tracker
 ===========

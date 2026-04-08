@@ -38,17 +38,21 @@ class TestStockReportingAccess(TransactionCase):
         self.assertIn(self.group_stock_manager, menu_groups)
 
     def test_user_reporting_can_access_menu(self):
-        user_groups = self.user_reporting.groups_id
-        menu_groups = self.reporting_menu.groups_id
-        has_access = bool(user_groups & menu_groups)
-        self.assertTrue(
-            has_access, "User with reporting group should access reporting menu"
+        visible = (
+            self.env["ir.ui.menu"].with_user(self.user_reporting)._visible_menu_ids()
+        )
+        self.assertIn(
+            self.reporting_menu.id,
+            visible,
+            "User with reporting group should access reporting menu",
         )
 
     def test_user_stock_only_cannot_access_menu(self):
-        user_groups = self.user_stock_only.groups_id
-        menu_groups = self.reporting_menu.groups_id
-        has_access = bool(user_groups & menu_groups)
-        self.assertFalse(
-            has_access, "User with only stock user group should not access menu"
+        visible = (
+            self.env["ir.ui.menu"].with_user(self.user_stock_only)._visible_menu_ids()
+        )
+        self.assertNotIn(
+            self.reporting_menu.id,
+            visible,
+            "User with only stock user group should not access menu",
         )
