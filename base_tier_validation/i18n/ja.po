@@ -58,7 +58,7 @@ msgstr "<span class=\"oe_edit_only\">名称</span>"
 #. module: base_tier_validation
 #: model_terms:ir.ui.view,arch_db:base_tier_validation.tier_definition_view_form
 msgid "<span>Bypass, if previous tier was validated by same reviewer</span>"
-msgstr "<span>同じレビュアーが前の階層を承認した場合にバイパスする</span>"
+msgstr "<span>同じレビュアーが前の段階を承認した場合にバイパスする</span>"
 
 #. module: base_tier_validation
 #. odoo-python
@@ -126,7 +126,7 @@ msgstr "レビュアーの書き込みを許可"
 #. module: base_tier_validation
 #: model:ir.model.fields,help:base_tier_validation.field_tier_validation_exception__group_ids
 msgid "Allowed groups to use this Tier Validation Exception"
-msgstr "この階層承認例外を使用できるグループ"
+msgstr "この段階承認例外を使用できるグループ"
 
 #. module: base_tier_validation
 #: model:ir.model.fields.selection,name:base_tier_validation.selection__tier_definition__review_type__group
@@ -180,7 +180,7 @@ msgstr ""
 #: model:ir.model.fields,help:base_tier_validation.field_tier_review__approve_sequence_bypass
 msgid ""
 "Bypassed (auto validated), if previous tier was validated by same reviewer"
-msgstr "同じレビュアーが前の階層を承認した場合に自動的にバイパス（自動承認）される"
+msgstr "同じレビュアーが前の段階を承認した場合に自動的にバイパス（自動承認）される"
 
 #. module: base_tier_validation
 #: model:ir.model.fields,field_description:base_tier_validation.field_tier_review__can_review
@@ -454,7 +454,7 @@ msgstr "要承認"
 #. odoo-python
 #: code:addons/base_tier_validation/models/tier_definition.py:0
 msgid "New Tier Validation"
-msgstr "新規階層承認"
+msgstr "新規段階承認"
 
 #. module: base_tier_validation
 #: model:ir.model.fields,field_description:base_tier_validation.field_tier_validation__next_review
@@ -491,7 +491,7 @@ msgstr "拒否時にレビュアーへ通知"
 #. module: base_tier_validation
 #: model:ir.model.fields,field_description:base_tier_validation.field_tier_definition__notify_on_restarted
 msgid "Notify Reviewers on Restarted"
-msgstr "再開時にレビュアーへ通知"
+msgstr "やり直し時にレビュアーへ通知"
 
 #. module: base_tier_validation
 #: model:ir.model.fields,field_description:base_tier_validation.field_tier_definition__notify_on_pending
@@ -630,7 +630,7 @@ msgstr "レビュー"
 #. module: base_tier_validation
 #: model:ir.actions.server,name:base_tier_validation.ir_cron_auto_tier_validation_ir_actions_server
 msgid "Send Tier Review Reminder"
-msgstr "階層レビューリマインダーを送信"
+msgstr "段階レビューリマインダーを送信"
 
 #. module: base_tier_validation
 #: model:ir.model.fields,field_description:base_tier_validation.field_tier_definition__notify_reminder_delay
@@ -677,7 +677,7 @@ msgstr ""
 #. module: base_tier_validation
 #: model:ir.model.fields,field_description:base_tier_validation.field_tier_review__sequence
 msgid "Tier"
-msgstr "階層"
+msgstr "段階"
 
 #. module: base_tier_validation
 #: model:ir.actions.act_window,name:base_tier_validation.tier_definition_action
@@ -685,70 +685,70 @@ msgstr "階層"
 #: model:ir.ui.menu,name:base_tier_validation.menu_tier_definition
 #: model_terms:ir.ui.view,arch_db:base_tier_validation.tier_definition_view_form
 msgid "Tier Definition"
-msgstr "階層定義"
+msgstr "段階定義"
 
 #. module: base_tier_validation
 #: model:ir.model.fields,field_description:base_tier_validation.field_res_config_settings__module_base_tier_validation_formula
 msgid "Tier Formula"
-msgstr "階層フォーミュラ"
+msgstr "段階フォーミュラ"
 
 #. module: base_tier_validation
 #: model:ir.model,name:base_tier_validation.model_tier_review
 msgid "Tier Review"
-msgstr "階層レビュー"
+msgstr "段階レビュー"
 
 #. module: base_tier_validation
 #: model_terms:ir.ui.view,arch_db:base_tier_validation.res_config_settings_view_form_budget
 msgid "Tier Validation"
-msgstr "階層承認"
+msgstr "段階承認"
 
 #. module: base_tier_validation
 #: model:ir.model,name:base_tier_validation.model_tier_validation
 msgid "Tier Validation (abstract)"
-msgstr "階層承認（抽象）"
+msgstr "段階承認（抽象）"
 
 #. module: base_tier_validation
 #: model:mail.message.subtype,name:base_tier_validation.mt_tier_validation_accepted
 msgid "Tier Validation Accepted Notification"
-msgstr "階層承認通知"
+msgstr "段階承認通知"
 
 #. module: base_tier_validation
 #: model:ir.actions.act_window,name:base_tier_validation.tier_validation_exception_action
 #: model:ir.ui.menu,name:base_tier_validation.menu_tier_validation_exception
 #: model_terms:ir.ui.view,arch_db:base_tier_validation.tier_validation_exception_form
 msgid "Tier Validation Exception"
-msgstr "階層承認例外"
+msgstr "段階承認例外"
 
 #. module: base_tier_validation
 #: model:ir.model,name:base_tier_validation.model_tier_validation_exception
 msgid "Tier Validation Exceptions"
-msgstr "階層承認例外"
+msgstr "段階承認例外"
 
 #. module: base_tier_validation
 #: model:mail.message.subtype,name:base_tier_validation.mt_tier_validation_rejected
 msgid "Tier Validation Rejected Notification"
-msgstr "階層承認拒否通知"
+msgstr "段階承認拒否通知"
 
 #. module: base_tier_validation
 #: model:mail.activity.type,name:base_tier_validation.mail_act_tier_validation_reminder
 #: model:mail.message.subtype,name:base_tier_validation.mt_tier_validation_reminder
 msgid "Tier Validation Reminder"
-msgstr "階層承認リマインダー"
+msgstr "段階承認リマインダー"
 
 #. module: base_tier_validation
 #: model:mail.message.subtype,name:base_tier_validation.mt_tier_validation_requested
 msgid "Tier Validation Requested"
-msgstr "階層承認依頼済"
+msgstr "段階承認依頼済"
 
 #. module: base_tier_validation
 #: model:mail.message.subtype,name:base_tier_validation.mt_tier_validation_restarted
 msgid "Tier Validation Restarted"
-msgstr "階層承認再開"
+msgstr "段階承認再開"
 
 #. module: base_tier_validation
 #: model:ir.ui.menu,name:base_tier_validation.menu_tier_confirmation
 msgid "Tier Validations"
-msgstr "階層承認"
+msgstr "段階承認"
 
 #. module: base_tier_validation
 #: model:ir.model.fields,field_description:base_tier_validation.field_tier_validation__to_validate_message
@@ -902,4 +902,4 @@ msgstr ""
 #. module: base_tier_validation
 #: model_terms:ir.ui.view,arch_db:base_tier_validation.tier_definition_view_form
 msgid "e.g. Tier Validation for..."
-msgstr "例: ...の階層承認"
+msgstr "例: ...の段階承認"
