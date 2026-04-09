@@ -660,7 +660,7 @@ msgstr "状態"
 #. odoo-python
 #: code:addons/base_tier_validation/models/tier_validation.py:0
 msgid "The review has been reset by %s."
-msgstr "%s により承認がリセットされました。"
+msgstr "%s によりレビューがリセットされました。"
 
 #. module: base_tier_validation
 #. odoo-python
