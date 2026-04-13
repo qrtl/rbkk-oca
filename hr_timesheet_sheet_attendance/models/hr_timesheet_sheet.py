@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
@@ -93,17 +93,24 @@ class HrTimesheetSheet(models.Model):
         records = super().create(vals_list)
         attendances = self.env["hr.attendance"]
         for res in records:
+            # Widen the search window by 1 day to account for timezone
+            # differences between UTC (stored in check_in/check_out) and
+            # the employee's local timezone. _compute_sheet_id() will then
+            # correctly assign only the attendances that truly belong to
+            # this sheet using timezone-aware date comparison.
+            date_start = res.date_start - timedelta(days=1)
+            date_end = res.date_end + timedelta(days=1)
             attendances |= self.env["hr.attendance"].search(
                 [
                     ("employee_id", "=", res.employee_id.id),
                     ("sheet_id", "=", False),
-                    ("check_in", ">=", res.date_start),
-                    ("check_in", "<=", res.date_end),
+                    ("check_in", ">=", date_start),
+                    ("check_in", "<=", date_end),
                     "|",
                     ("check_out", "=", False),
                     "&",
-                    ("check_out", ">=", res.date_start),
-                    ("check_out", "<=", res.date_end),
+                    ("check_out", ">=", date_start),
+                    ("check_out", "<=", date_end),
                 ]
             )
         attendances.sudo()._compute_sheet_id()
