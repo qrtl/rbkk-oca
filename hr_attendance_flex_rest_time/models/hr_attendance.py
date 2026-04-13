@@ -30,10 +30,8 @@ class HrAttendance(models.Model):
         for rec in self:
             if is_manager:
                 rec.is_rest_time_editable = True
-            elif is_officer:
-                rec.is_rest_time_editable = (
-                    rec.employee_id.attendance_manager_id == self.env.user
-                )
+            elif is_officer and rec.employee_id.attendance_manager_id == self.env.user:
+                rec.is_rest_time_editable = True
             else:
                 rec.is_rest_time_editable = rec.overtime_status != "approved"
 
