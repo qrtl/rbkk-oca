@@ -55,7 +55,7 @@ msgstr "差異"
 #. module: hr_timesheet_sheet_attendance
 #: model:ir.model.fields,field_description:hr_timesheet_sheet_attendance.field_hr_attendance__sheet_id
 msgid "Sheet"
-msgstr "表"
+msgstr "タイムシートレポート"
 
 #. module: hr_timesheet_sheet_attendance
 #: model:ir.model.fields,field_description:hr_timesheet_sheet_attendance.field_hr_attendance__smart_search
