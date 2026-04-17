@@ -84,7 +84,7 @@ msgstr "タイムシート活動明細"
 #. module: hr_timesheet_sheet_attendance
 #: model:ir.model,name:hr_timesheet_sheet_attendance.model_hr_timesheet_sheet
 msgid "Timesheet Sheet"
-msgstr "タイムシート"
+msgstr "タイムシートレポート"
 
 #. module: hr_timesheet_sheet_attendance
 #: model:ir.model.fields,field_description:hr_timesheet_sheet_attendance.field_hr_timesheet_sheet__total_attendance
