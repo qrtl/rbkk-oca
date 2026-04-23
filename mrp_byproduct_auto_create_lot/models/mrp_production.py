@@ -43,6 +43,8 @@ class MrpProduction(models.Model):
         self._set_auto_lot()
         return super()._action_done()
 
-    def button_mark_done(self):
-        self._set_auto_lot()
-        return super().button_mark_done()
+    def pre_button_mark_done(self):
+        res = super().pre_button_mark_done()
+        if res is True:
+            self._set_auto_lot()
+        return res

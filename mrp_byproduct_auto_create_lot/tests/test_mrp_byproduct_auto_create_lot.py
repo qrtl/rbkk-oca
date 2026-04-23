@@ -168,6 +168,35 @@ class TestMrpByproductAutoLot(CommonMrpByproductAutoCreateLot, TransactionCase):
         )
         self.assertEqual(len(serial), 3)
 
+    def test_07_mark_done_after_quantity_reset_keeps_byproduct_lots(self):
+        self.env.company.propagate_lot_to_byproduct = "yes"
+        bom = self._create_bom(
+            by_product=self.product_b, main_product=self.product_manuf_tracked
+        )
+        production = self._create_manufacturing_order(
+            bom=bom, by_product_qty=2.0, product=self.product_manuf_tracked
+        )
+        production.action_confirm()
+        production.button_plan()
+
+        byproduct_move = production.move_byproduct_ids.filtered(
+            lambda move: move.product_id == self.product_b
+        )
+        byproduct_move._set_quantity_done(1.0)
+
+        production.button_mark_done()
+
+        self.assertEqual(production.state, "done")
+        byproduct_move_lines = production.move_byproduct_ids.move_line_ids.filtered(
+            lambda line: line.product_id == self.product_b
+        )
+        self.assertGreater(len(byproduct_move_lines), 1)
+        self.assertTrue(all(byproduct_move_lines.mapped("lot_id")))
+        self.assertEqual(
+            set(byproduct_move_lines.mapped("lot_id.name")),
+            {production.lot_producing_id.name},
+        )
+
     def _assign_manual_serials(self, moves):
         moves.move_line_ids.quantity = 1.0
         for line in moves.move_line_ids:
