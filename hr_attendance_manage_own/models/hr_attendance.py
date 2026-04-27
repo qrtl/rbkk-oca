@@ -37,10 +37,24 @@ class HrAttendance(models.Model):
                     _("You are not allowed to change the overtime status.")
                 )
 
+    def _get_write_bypass_fields(self):
+        param = (
+            self.env["ir.config_parameter"]
+            .sudo()
+            .get_param("hr_attendance_manage_own.write_bypass_fields", "")
+        )
+        return {f.strip() for f in param.split(",") if f.strip()}
+
     def write(self, vals):
         if not self._is_own_manager_only():
             return super().write(vals)
         if self._is_attendance_manager_for_employees(self.employee_id):
+            return super().write(vals)
+        # Strip validated_overtime_hours so the compute determines its value.
+        # The form client may include it in the payload when saving.
+        vals = {k: v for k, v in vals.items() if k != "validated_overtime_hours"}
+        bypass_fields = self._get_write_bypass_fields()
+        if not set(vals.keys()) - bypass_fields:
             return super().write(vals)
         if self.filtered(lambda r: r._is_processed()):
             raise AccessError(
@@ -49,9 +63,6 @@ class HrAttendance(models.Model):
                     "been processed (approved or refused)."
                 )
             )
-        # Strip validated_overtime_hours so the compute determines its value.
-        # The form client may include it in the payload when saving.
-        vals = {k: v for k, v in vals.items() if k != "validated_overtime_hours"}
         return super().write(vals)
 
     @api.ondelete(at_uninstall=False)
