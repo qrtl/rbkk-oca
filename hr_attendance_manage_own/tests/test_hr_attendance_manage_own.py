@@ -187,6 +187,18 @@ class TestHrAttendanceManageOwn(TransactionCase):
         self.attendance.with_user(manager_user).action_approve_overtime()
         self.assertEqual(self.attendance.overtime_status, "approved")
 
+    def test_write_bypass_fields_on_processed(self):
+        self.user.groups_id = [Command.link(self.own_manager_group.id)]
+        self.attendance.overtime_status = "approved"
+        self.env["ir.config_parameter"].set_param(
+            "hr_attendance_manage_own.write_bypass_fields", "check_in"
+        )
+        self.attendance.with_user(self.user).write({"check_in": "2026-02-26 09:00:00"})
+        with self.assertRaises(AccessError):
+            self.attendance.with_user(self.user).write(
+                {"check_in": "2026-02-26 11:00:00", "check_out": "2026-02-26 18:00:00"}
+            )
+
     def test_attendance_manager_bypass(self):
         officer_user = self.env["res.users"].create(
             {
