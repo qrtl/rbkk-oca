@@ -371,10 +371,11 @@ ul.auto-toc {
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
 <p><a class="reference external image-reference" href="https://odoo-community.org/page/development-status"><img alt="Beta" src="https://img.shields.io/badge/maturity-Beta-yellow.png" /></a> <a class="reference external image-reference" href="http://www.gnu.org/licenses/agpl-3.0-standalone.html"><img alt="License: AGPL-3" src="https://img.shields.io/badge/licence-AGPL--3-blue.png" /></a> <a class="reference external image-reference" href="https://github.com/OCA/account-analytic/tree/18.0/mrp_stock_analytic"><img alt="OCA/account-analytic" src="https://img.shields.io/badge/github-OCA%2Faccount--analytic-lightgray.png?logo=github" /></a> <a class="reference external image-reference" href="https://translation.odoo-community.org/projects/account-analytic-18-0/account-analytic-18-0-mrp_stock_analytic"><img alt="Translate me on Weblate" src="https://img.shields.io/badge/weblate-Translate%20me-F47D42.png" /></a> <a class="reference external image-reference" href="https://runboat.odoo-community.org/builds?repo=OCA/account-analytic&amp;target_branch=18.0"><img alt="Try me on Runboat" src="https://img.shields.io/badge/runboat-Try%20me-875A7B.png" /></a></p>
 <p>Allows to assign the analytic distribution in the manufacturing order,
-which should propagate the value to the corresponding field of the
-related component stock moves.</p>
+which propagates the value to the component stock moves. Optionally, it
+can also propagate to finished product moves (including byproducts) when
+the corresponding setting is enabled.</p>
 <p>This function can be useful when cost analysis needs to be done on
-flushed components.</p>
+consumed components or finished products.</p>
 <p>Additionally, analytic distribution from manufacturing orders is
 propagated to WIP accounting entries. When creating WIP journal entries
 through the WIP Accounting wizard, the analytic distribution is
@@ -399,6 +400,9 @@ separate WIP lines are created for each analytic distribution.</p>
 <div class="section" id="configuration">
 <h1><a class="toc-backref" href="#toc-entry-1">Configuration</a></h1>
 <p>Refer to the relevant section of the stock_analytic module.</p>
+<p>To propagate analytic distribution to finished product moves, enable
+<strong>MRP Analytic on Finished Products</strong> under <em>Settings &gt; Inventory &gt;
+Valuation</em>.</p>
 </div>
 <div class="section" id="usage">
 <h1><a class="toc-backref" href="#toc-entry-2">Usage</a></h1>

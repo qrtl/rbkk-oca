@@ -117,6 +117,23 @@ class TestMrpStockAnalytic(CommonStockPicking):
                     move_line.analytic_distribution, self.analytic_distribution
                 )
 
+    def test_propagate_analytic_to_finished_moves(self):
+        self.env.company.mrp_analytic_on_finished = True
+        production = self._create_production(1)
+        production.analytic_distribution = self.analytic_distribution
+        self.assertEqual(
+            production.move_finished_ids.analytic_distribution,
+            self.analytic_distribution,
+        )
+        production.analytic_distribution = False
+        self.assertFalse(production.move_finished_ids.analytic_distribution)
+
+    def test_no_propagate_analytic_to_finished_moves_when_disabled(self):
+        self.env.company.mrp_analytic_on_finished = False
+        production = self._create_production(1)
+        production.analytic_distribution = self.analytic_distribution
+        self.assertFalse(production.move_finished_ids.analytic_distribution)
+
     def _action_wizard_form(self, open_record, action_res: dict) -> Form:
         context = dict(
             action_res.get("context", {}),
