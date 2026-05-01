@@ -261,3 +261,19 @@ class TestMrpStockAnalytic(CommonStockPicking):
         production.analytic_distribution = {str(analytic_account.id): 100.0}
         production.button_mark_done()
         self.assertEqual(production.state, "done")
+
+    def test_analytic_distribution_new_component_after_confirm(self):
+        production = self.production
+        production.analytic_distribution = self.analytic_distribution
+        new_move = self.env["stock.move"].create(
+            {
+                "name": self.product_B.name,
+                "product_id": self.product_B.id,
+                "product_uom_qty": 1,
+                "product_uom": self.product_B.uom_id.id,
+                "location_id": self.stock_location_id,
+                "location_dest_id": production.production_location_id.id,
+                "raw_material_production_id": production.id,
+            }
+        )
+        self.assertEqual(new_move.analytic_distribution, self.analytic_distribution)
