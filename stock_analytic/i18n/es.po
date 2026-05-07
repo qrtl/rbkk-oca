@@ -10,20 +10,21 @@ msgstr ""
 "Project-Id-Version: Odoo Server 10.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-02-21 03:54+0000\n"
-"PO-Revision-Date: 2025-08-07 14:25+0000\n"
-"Last-Translator: Miquel Romera <mromera@pmsastro.es>\n"
+"PO-Revision-Date: 2026-04-08 12:45+0000\n"
+"Last-Translator: pere-aquarian <pere@aquarian.tech>\n"
 "Language-Team: Spanish (https://www.transifex.com/oca/teams/23907/es/)\n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.10.4\n"
+"X-Generator: Weblate 5.15.2\n"
 
 #. module: stock_analytic
 #: model:ir.model.fields,field_description:stock_analytic.field_stock_move__analytic_distribution
 #: model:ir.model.fields,field_description:stock_analytic.field_stock_move_line__analytic_distribution
 #: model:ir.model.fields,field_description:stock_analytic.field_stock_scrap__analytic_distribution
+#: model:ir.model.fields,field_description:stock_analytic.field_stock_valuation_layer__analytic_distribution
 msgid "Analytic Distribution"
 msgstr "Distribución analítica"
 
@@ -36,6 +37,7 @@ msgstr "Aplicabilidad del Plan Analítico"
 #: model:ir.model.fields,field_description:stock_analytic.field_stock_move__analytic_precision
 #: model:ir.model.fields,field_description:stock_analytic.field_stock_move_line__analytic_precision
 #: model:ir.model.fields,field_description:stock_analytic.field_stock_scrap__analytic_precision
+#: model:ir.model.fields,field_description:stock_analytic.field_stock_valuation_layer__analytic_precision
 msgid "Analytic Precision"
 msgstr "Precisión Analítica"
 
@@ -103,6 +105,11 @@ msgstr "Movimiento de existencias"
 #: model:ir.model,name:stock_analytic.model_stock_rule
 msgid "Stock Rule"
 msgstr "Regla de stock"
+
+#. module: stock_analytic
+#: model:ir.model,name:stock_analytic.model_stock_valuation_layer
+msgid "Stock Valuation Layer"
+msgstr "Capa de valoración de stock"
 
 #. module: stock_analytic
 #: model:ir.model,name:stock_analytic.model_stock_picking
