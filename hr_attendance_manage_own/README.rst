@@ -1,6 +1,6 @@
-============================
-HR Attendance Own Management
-============================
+================================
+HR Attendance Manage Own Records
+================================
 
 .. 
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -41,11 +41,11 @@ This module introduces a "User: Manage own attendances" group that
 grants create and edit access to the user's own attendance records, with
 the following restrictions:
 
--  Users cannot change the overtime status or extra hours of their
-   records.
--  When the company's extra hours validation is set to "By Manager",
-   records that have been approved or refused cannot be modified or
-   deleted.
+- Users cannot change the overtime status or extra hours of their
+  records.
+- When the company's extra hours validation is set to "By Manager",
+  records that have been approved or refused cannot be modified or
+  deleted.
 
 **Table of contents**
 
@@ -61,6 +61,17 @@ To configure this module:
 2. Find and select the "User: Manage own attendances" group
 3. Add users to this group to allow them to create and edit their own
    attendance records
+
+Optionally, you can configure fields that bypass the processed-record
+write restriction. This is useful when other modules (e.g.
+``hr_timesheet_sheet``) need to write certain fields on attendance
+records that have already been approved or refused.
+
+1. Go to *Settings > Technical > Parameters > System Parameters*
+2. Create a parameter with key
+   ``hr_attendance_manage_own.write_bypass_fields``
+3. Set the value to a comma-separated list of field names (e.g.
+   ``sheet_id``)
 
 Bug Tracker
 ===========
@@ -83,10 +94,12 @@ Authors
 Contributors
 ------------
 
--  Quartile <https://www.quartile.co>
+- Quartile <https://www.quartile.co>
 
-   -  Tatsuki Kanda
-   -  Aung Ko Ko Lin
+  - Tatsuki Kanda
+  - Aung Ko Ko Lin
+  - Yoshi Tashiro
+  - Sanami Koshita
 
 Maintainers
 -----------
