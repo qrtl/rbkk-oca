@@ -17,6 +17,9 @@
             "web_m2x_dialog_no_create/static/src/select_create_dialog.esm.js",
             "web_m2x_dialog_no_create/static/src/select_create_dialog.xml",
         ],
+        "web.assets_unit_tests": [
+            "web_m2x_dialog_no_create/static/tests/**/*",
+        ],
     },
     "installable": True,
 }

@@ -9,5 +9,8 @@ class ResCompany(models.Model):
 
     m2x_dialog_create_model_ids = fields.Many2many(
         "ir.model",
+        relation="res_company_m2x_dialog_create_model_rel",
+        column1="company_id",
+        column2="model_id",
         string="Allow Create from Search Dialog",
     )
