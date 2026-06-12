@@ -15,15 +15,7 @@ class StockMove(models.Model):
 
     def _should_auto_pick_byproduct(self):
         self.ensure_one()
-        template = self.product_id.product_tmpl_id
-        if template.byproduct_auto_pick:
-            return template.byproduct_auto_pick == "always"
-        category = template.categ_id
-        while category:
-            if category.byproduct_auto_pick:
-                return category.byproduct_auto_pick == "always"
-            category = category.parent_id
-        return self.company_id.byproduct_auto_pick
+        return self.production_id.byproduct_auto_pick
 
     def write(self, vals):
         # The MO recompute writes byproduct quantities through

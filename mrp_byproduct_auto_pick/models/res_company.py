@@ -11,6 +11,5 @@ class ResCompany(models.Model):
         string="Auto-pick Manually Edited Byproducts",
         help="When enabled, a manually entered byproduct quantity on a "
         "manufacturing order is kept (marked as picked) instead of being "
-        "reset to the quantity to produce. This is the company-wide default, "
-        "which can be overridden per product category or per product.",
+        "reset to the quantity to produce.",
     )

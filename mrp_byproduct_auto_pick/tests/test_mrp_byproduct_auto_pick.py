@@ -40,12 +40,13 @@ class TestMrpByproductAutoPick(TransactionCase):
             }
         )
 
-    def _confirm_mo(self):
+    def _confirm_mo(self, byproduct_auto_pick=True):
         mo_form = Form(self.env["mrp.production"])
         mo_form.product_id = self.finished
         mo_form.bom_id = self.bom
         mo_form.product_qty = 1.0
         mo = mo_form.save()
+        mo.byproduct_auto_pick = byproduct_auto_pick
         mo.action_confirm()
         return mo
 
@@ -54,9 +55,8 @@ class TestMrpByproductAutoPick(TransactionCase):
         mo.qty_producing = 1.0
         mo._set_qty_producing(False)
 
-    def test_always_preserves_manual_quantity(self):
-        self.byproduct.byproduct_auto_pick = "always"
-        mo = self._confirm_mo()
+    def test_enabled_preserves_manual_quantity(self):
+        mo = self._confirm_mo(byproduct_auto_pick=True)
         move = mo.move_byproduct_ids
         self.assertEqual(len(move), 1)
         move.quantity = 5.0
@@ -66,9 +66,8 @@ class TestMrpByproductAutoPick(TransactionCase):
         # The manual value survives the recompute.
         self.assertEqual(move.quantity, 5.0)
 
-    def test_never_reverts_manual_quantity(self):
-        self.byproduct.byproduct_auto_pick = "never"
-        mo = self._confirm_mo()
+    def test_disabled_reverts_manual_quantity(self):
+        mo = self._confirm_mo(byproduct_auto_pick=False)
         move = mo.move_byproduct_ids
         move.quantity = 5.0
         self.assertFalse(move.picked)
@@ -80,8 +79,8 @@ class TestMrpByproductAutoPick(TransactionCase):
         # For tracked byproducts the quantity field is read-only; the operator
         # enters quantities through the move lines (lot numbers) instead, which
         # the form sends as move_line_ids commands on the move.
-        self.byproduct.write({"tracking": "lot", "byproduct_auto_pick": "always"})
-        mo = self._confirm_mo()
+        self.byproduct.write({"tracking": "lot"})
+        mo = self._confirm_mo(byproduct_auto_pick=True)
         move = mo.move_byproduct_ids
         self.assertFalse(move.picked)
         line = move.move_line_ids[:1]
@@ -117,30 +116,27 @@ class TestMrpByproductAutoPick(TransactionCase):
         # The manually entered quantity survives the recompute.
         self.assertEqual(move.quantity, 5.0)
 
-    def test_company_default_applies(self):
+    def test_company_default_propagated(self):
         self.env.company.byproduct_auto_pick = True
-        self.byproduct.byproduct_auto_pick = False
-        mo = self._confirm_mo()
+        mo_form = Form(self.env["mrp.production"])
+        mo_form.product_id = self.finished
+        mo_form.bom_id = self.bom
+        mo_form.product_qty = 1.0
+        mo = mo_form.save()
+        # The computed field should pick up the company value.
+        self.assertTrue(mo.byproduct_auto_pick)
+        mo.action_confirm()
         move = mo.move_byproduct_ids
         move.quantity = 5.0
         self.assertTrue(move.picked)
         self._recompute(mo)
         self.assertEqual(move.quantity, 5.0)
 
-    def test_cascade_resolution(self):
-        move = self._confirm_mo().move_byproduct_ids
-        category = self.byproduct.categ_id
-        # Everything inherits, company off -> not auto picked.
+    def test_company_default_off(self):
         self.env.company.byproduct_auto_pick = False
-        self.byproduct.byproduct_auto_pick = False
-        category.byproduct_auto_pick = False
-        self.assertFalse(move._should_auto_pick_byproduct())
-        # Company default on.
-        self.env.company.byproduct_auto_pick = True
-        self.assertTrue(move._should_auto_pick_byproduct())
-        # Category 'never' overrides the company default.
-        category.byproduct_auto_pick = "never"
-        self.assertFalse(move._should_auto_pick_byproduct())
-        # Product 'always' overrides the category.
-        self.byproduct.byproduct_auto_pick = "always"
-        self.assertTrue(move._should_auto_pick_byproduct())
+        mo_form = Form(self.env["mrp.production"])
+        mo_form.product_id = self.finished
+        mo_form.bom_id = self.bom
+        mo_form.product_qty = 1.0
+        mo = mo_form.save()
+        self.assertFalse(mo.byproduct_auto_pick)

@@ -376,9 +376,10 @@ including when <em>Produce All</em> fills the producing quantity automatically.
 As a result, a quantity that an operator entered manually on a byproduct
 line is silently reset to the quantity to produce, unless the line
 happens to be marked as picked.</p>
-<p>This module lets you opt in, per product, per product category or
-company-wide, to keep the manually entered byproduct quantity: when an
-operator edits the quantity of an eligible byproduct line, the line is
+<p>This module adds an <em>Auto-pick Manually Edited Byproducts</em> option to
+manufacturing orders (defaulted from a company-wide setting) to keep the
+manually entered byproduct quantity: when an operator edits the quantity
+of a byproduct line on an enabled manufacturing order, the line is
 automatically marked as picked so its value is preserved through
 <em>Produce All</em>.</p>
 <p>Byproduct lines that are not edited keep the standard behavior and still
@@ -398,26 +399,14 @@ scale with the producing quantity.</p>
 </div>
 <div class="section" id="configuration">
 <h1><a class="toc-backref" href="#toc-entry-1">Configuration</a></h1>
-<p>The behavior is resolved with the following precedence (most specific
-wins):</p>
 <ol class="arabic simple">
-<li><strong>Product</strong> – <em>Inventory</em> tab of a product, field <em>Byproduct Auto
-Pick</em>.</li>
-<li><strong>Product category</strong> – field <em>Byproduct Auto Pick</em> (cascades up the
-category tree).</li>
-<li><strong>Company</strong> – <em>Manufacturing &gt; Configuration &gt; Settings</em>, option
-<em>Auto-pick Manually Edited Byproducts</em>.</li>
+<li><strong>Company default</strong> – Go to <em>Manufacturing &gt; Configuration &gt;
+Settings</em> and tick <em>Auto-pick Manually Edited Byproducts</em>. New
+manufacturing orders will inherit this value.</li>
+<li><strong>Per manufacturing order</strong> – The <em>Auto-pick Manually Edited
+Byproducts</em> checkbox on a manufacturing order can be toggled
+individually, overriding the company default for that order.</li>
 </ol>
-<p>At product and category level the field has two values, and can also be
-left empty:</p>
-<ul class="simple">
-<li><strong>Empty</strong>: fall back to the next level (category, then company).</li>
-<li><strong>Always</strong>: keep the manually entered byproduct quantity.</li>
-<li><strong>Never</strong>: reset to the quantity to produce (standard Odoo behavior).</li>
-</ul>
-<p>To enable the behavior everywhere, tick the company-wide option and
-leave the product and category fields empty. To enable it only for some
-products, set them (or their category) to <em>Always</em>.</p>
 </div>
 <div class="section" id="bug-tracker">
 <h1><a class="toc-backref" href="#toc-entry-2">Bug Tracker</a></h1>

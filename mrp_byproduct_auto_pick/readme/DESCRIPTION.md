@@ -5,10 +5,11 @@ quantity that an operator entered manually on a byproduct line is silently
 reset to the quantity to produce, unless the line happens to be marked as
 picked.
 
-This module lets you opt in, per product, per product category or company-wide,
-to keep the manually entered byproduct quantity: when an operator edits the
-quantity of an eligible byproduct line, the line is automatically marked as
-picked so its value is preserved through *Produce All*.
+This module adds an *Auto-pick Manually Edited Byproducts* option to
+manufacturing orders (defaulted from a company-wide setting) to keep the
+manually entered byproduct quantity: when an operator edits the quantity of a
+byproduct line on an enabled manufacturing order, the line is automatically
+marked as picked so its value is preserved through *Produce All*.
 
 Byproduct lines that are not edited keep the standard behavior and still scale
 with the producing quantity.

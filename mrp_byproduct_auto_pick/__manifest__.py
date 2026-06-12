@@ -12,8 +12,7 @@
     "website": "https://github.com/OCA/manufacture",
     "depends": ["mrp"],
     "data": [
-        "views/product_category_views.xml",
-        "views/product_views.xml",
+        "views/mrp_production_views.xml",
         "views/res_config_settings_views.xml",
     ],
     "maintainers": ["yostashiro", "aungkokolin1997"],

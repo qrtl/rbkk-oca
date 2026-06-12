@@ -8,7 +8,8 @@
             <xpath expr="//setting[@id='mrp_byproduct']" position="after">
                 <setting
                     id="byproduct_auto_pick"
-                    help="Keep manually entered byproduct quantities on manufacturing orders instead of resetting them to the quantity to produce. Can be overridden per product category or per product."
+                    groups="mrp.group_mrp_byproducts"
+                    help="Keep manually entered byproduct quantities on manufacturing orders instead of resetting them to the quantity to produce."
                 >
                     <field name="byproduct_auto_pick" />
                 </setting>
