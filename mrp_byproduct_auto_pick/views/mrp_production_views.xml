@@ -5,8 +5,13 @@
         <field name="model">mrp.production</field>
         <field name="inherit_id" ref="mrp.mrp_production_form_view" />
         <field name="arch" type="xml">
-            <xpath expr="//group[@name='group_extra_info']" position="inside">
-                <field name="byproduct_auto_pick" groups="mrp.group_mrp_byproducts" />
+            <xpath expr="//field[@name='move_byproduct_ids']" position="before">
+                <group>
+                    <field
+                        name="byproduct_auto_pick"
+                        readonly="state in ['cancel', 'done']"
+                    />
+                </group>
             </xpath>
         </field>
     </record>

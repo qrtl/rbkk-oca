@@ -12,8 +12,8 @@ class MrpProduction(models.Model):
         compute="_compute_byproduct_auto_pick",
         store=True,
         readonly=False,
-        help="When enabled, a manually entered byproduct quantity is kept "
-        "(marked as picked) instead of being reset to the quantity to produce.",
+        help="Keep manually entered byproduct quantities on manufacturing "
+        "orders instead of resetting them to the quantity to produce.",
     )
 
     @api.depends("company_id")

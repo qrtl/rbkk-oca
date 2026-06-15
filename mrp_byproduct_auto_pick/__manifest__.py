@@ -15,6 +15,6 @@
         "views/mrp_production_views.xml",
         "views/res_config_settings_views.xml",
     ],
-    "maintainers": ["yostashiro", "aungkokolin1997"],
+    "maintainers": ["kanda999", "aungkokolin1997"],
     "installable": True,
 }
