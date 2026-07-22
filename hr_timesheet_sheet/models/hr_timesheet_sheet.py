@@ -149,6 +149,14 @@ class Sheet(models.Model):
         compute="_compute_available_task_ids",
     )
     total_time = fields.Float(compute="_compute_total_time", store=True)
+    approver_id = fields.Many2one(
+        comodel_name="res.users",
+        string="Approver",
+        compute="_compute_approver_id",
+        help="User able to review this sheet, in addition to the users allowed "
+        "by the review policy. It is read from the employee field configured "
+        "as the approver field on the company.",
+    )
     can_review = fields.Boolean(
         compute="_compute_can_review", search="_search_can_review"
     )
@@ -183,7 +191,18 @@ class Sheet(models.Model):
         for sheet in self:
             sheet.total_time = sum(sheet.mapped("timesheet_ids.unit_amount"))
 
-    @api.depends("review_policy")
+    @api.depends("employee_id", "company_id.timesheet_sheet_approver_field_id")
+    def _compute_approver_id(self):
+        for sheet in self:
+            company = sheet.company_id or self.env.company
+            field = company.sudo().timesheet_sheet_approver_field_id
+            approver = self.env["res.users"]
+            employee = sheet.employee_id
+            if field and employee and field.name in employee._fields:
+                approver = employee[field.name]
+            sheet.approver_id = approver
+
+    @api.depends("review_policy", "approver_id")
     def _compute_can_review(self):
         for sheet in self:
             sheet.can_review = self.env.user in sheet._get_possible_reviewers()
@@ -329,6 +348,8 @@ class Sheet(models.Model):
             res |= self.env.ref("hr.group_hr_manager").users
         elif self.review_policy == "timesheet_manager":
             res |= self.env.ref("hr_timesheet.group_hr_timesheet_approver").users
+        if self.approver_id:
+            res |= self.approver_id
         return res
 
     def _get_timesheet_sheet_company(self):

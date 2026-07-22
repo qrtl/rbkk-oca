@@ -1003,6 +1003,21 @@ class TestHrTimesheetSheet(TestHrTimesheetSheetCommon):
         sheet.unlink()
         self.assertFalse(sheet.exists())
 
+    @mute_logger("odoo.models.unlink")
+    def test_approver_from_configured_field(self):
+        sheet = Form(self.sheet_model.with_user(self.user)).save()
+        # No approver field configured yet, so there is no approver.
+        self.assertFalse(sheet.approver_id)
+        # Configure which employee field designates the approver. The user set
+        # in that field on the employee becomes the approver of the sheet and
+        # can review it.
+        self.company.timesheet_sheet_approver_field_id = self.env[
+            "ir.model.fields"
+        ]._get("hr.employee", "user_id")
+        sheet.invalidate_recordset(["approver_id"])
+        self.assertEqual(sheet.approver_id, self.employee.user_id)
+        self.assertIn(self.employee.user_id, sheet._get_possible_reviewers())
+
     def test_same_week_different_years(self):
         sheet_form = Form(self.sheet_model.with_user(self.user))
         sheet_form.date_start = date(2019, 12, 30)

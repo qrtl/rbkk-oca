@@ -108,6 +108,7 @@
                         <group name="details">
                             <field name="company_id" force_save="1" readonly="1" />
                             <field name="department_id" invisible="1" />
+                            <field name="approver_id" invisible="not approver_id" />
                         </group>
                     </group>
                     <field name="new_line_ids" invisible="1" />
