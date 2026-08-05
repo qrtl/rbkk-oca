@@ -11,3 +11,10 @@ accordingly.
 
 For adding more review policies, look at the
 *hr_timesheet_sheet_policy_xxx* extra modules.
+
+To let a specific user review an employee's sheets in addition to the
+users allowed by the review policy, go to *Configuration \> Settings \>
+Timesheet Options* and set **Timesheet Approver Field** to an employee
+field pointing to a user. For every sheet, the user found in that field
+on the employee is allowed to review it. Leave the setting empty to rely
+on the review policy only.

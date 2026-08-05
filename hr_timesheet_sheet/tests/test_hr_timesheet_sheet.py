@@ -1005,18 +1005,22 @@ class TestHrTimesheetSheet(TestHrTimesheetSheetCommon):
 
     @mute_logger("odoo.models.unlink")
     def test_approver_from_configured_field(self):
-        sheet = Form(self.sheet_model.with_user(self.user)).save()
-        # No approver field configured yet, so there is no approver.
-        self.assertFalse(sheet.approver_id)
-        # Configure which employee field designates the approver. The user set
-        # in that field on the employee becomes the approver of the sheet and
-        # can review it.
+        # `user_3` is not an HR Officer, so the "hr" review policy alone does
+        # not allow them to review the sheet.
+        sheet = Form(self.sheet_model.with_user(self.user_3)).save()
+        self.assertEqual(sheet.employee_id, self.department_manager)
+        self.assertEqual(sheet.review_policy, "hr")
+        self.assertNotIn(self.user_3, sheet._get_possible_reviewers())
+        self.assertFalse(sheet.with_user(self.user_3).can_review)
+        # Designating an employee field as the approver field grants review
+        # rights to the user it points to, on top of the review policy.
         self.company.timesheet_sheet_approver_field_id = self.env[
             "ir.model.fields"
         ]._get("hr.employee", "user_id")
-        sheet.invalidate_recordset(["approver_id"])
-        self.assertEqual(sheet.approver_id, self.employee.user_id)
-        self.assertIn(self.employee.user_id, sheet._get_possible_reviewers())
+        self.assertIn(self.user_3, sheet._get_possible_reviewers())
+        self.assertTrue(sheet.with_user(self.user_3).can_review)
+        sheet.unlink()
+        self.assertFalse(sheet.exists())
 
     def test_same_week_different_years(self):
         sheet_form = Form(self.sheet_model.with_user(self.user))
