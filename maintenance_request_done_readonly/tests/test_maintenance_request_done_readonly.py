@@ -25,6 +25,12 @@ class TestMaintenanceRequestDoneReadonly(TransactionCase):
             login="mrl_user",
             groups="base.group_user",
         )
+        cls.editor = new_test_user(
+            cls.env,
+            login="mrl_editor",
+            groups="base.group_user,"
+            "maintenance_request_done_readonly.group_maintenance_request_edit_done",
+        )
         cls.equipment = cls.env["maintenance.equipment"].create(
             {"name": "Test Equipment"}
         )
@@ -77,10 +83,26 @@ class TestMaintenanceRequestDoneReadonly(TransactionCase):
         self.assertEqual(request.name, "Still editable")
 
     def test_manager_can_edit_completed(self):
+        """Equipment managers imply the edit group, so they keep full access."""
+        self.assertTrue(
+            self.manager.has_group(
+                "maintenance_request_done_readonly."
+                "group_maintenance_request_edit_done"
+            )
+        )
         request = self._new_request(self.user)
         request.with_user(self.user).write({"stage_id": self.done_stage.id})
         request.with_user(self.manager).write({"name": "Corrected by manager"})
         self.assertEqual(request.name, "Corrected by manager")
+
+    def test_editor_can_edit_completed(self):
+        """A user granted the edit group, but not a manager, can still correct a
+        completed request."""
+        self.assertFalse(self.editor.has_group("maintenance.group_equipment_manager"))
+        request = self._new_request(self.editor)
+        request.with_user(self.editor).write({"stage_id": self.done_stage.id})
+        request.with_user(self.editor).write({"name": "Corrected by editor"})
+        self.assertEqual(request.name, "Corrected by editor")
 
     def test_regular_user_cannot_edit_close_date_when_done(self):
         """close_date is written internally on completion (bypass), but a

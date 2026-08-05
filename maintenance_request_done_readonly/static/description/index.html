@@ -373,13 +373,18 @@ ul.auto-toc {
 <p>This module makes completed maintenance requests read-only.</p>
 <p>Once a request reaches a done stage, it can no longer be edited or
 reopened: any attempt to change its fields (including moving it back out
-of the done stage) is blocked. Only members of the <em>Equipment Manager</em>
-group keep full access to completed requests.</p>
+of the done stage) is blocked. Only members of the <em>Maintenance: Edit
+Completed Requests</em> group keep full access to completed requests.
+<em>Equipment Manager</em> users get that group by default, so it can also be
+granted to users who should be able to correct completed requests
+without being maintenance managers.</p>
 <p>The restriction is enforced on write, so every field is locked by
 default, without having to enumerate them. Completing a request and its
 follow-up (commenting, following, scheduling activities) keep working.</p>
-<p>If some fields should stay editable after completion, an administrator
-can select them in <em>Settings &gt; Maintenance &gt; Completed Requests</em>.</p>
+<p>If some fields should stay editable after completion, edit the
+<tt class="docutils literal">maintenance_request_done_readonly.editable_fields</tt> system parameter
+(<em>Settings &gt; Technical &gt; Parameters &gt; System Parameters</em>, created on
+install) and set a comma-separated list of their technical names.</p>
 <p><strong>Table of contents</strong></p>
 <div class="contents local topic" id="contents">
 <ul class="simple">
