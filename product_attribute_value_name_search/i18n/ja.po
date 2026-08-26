@@ -1,0 +1,27 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* product_attribute_value_name_search
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 18.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-03-26 02:47+0000\n"
+"PO-Revision-Date: 2026-03-26 02:47+0000\n"
+"Last-Translator: \n"
+"Language-Team: Japanese\n"
+"Language: ja\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#. module: product_attribute_value_name_search
+#: model:ir.model,name:product_attribute_value_name_search.model_product_template_attribute_value
+msgid "Product Template Attribute Value"
+msgstr "プロダクトテンプレート属性値"
+
+#. module: product_attribute_value_name_search
+#: model:ir.model.fields,field_description:product_attribute_value_name_search.field_product_template_attribute_value__smart_search
+msgid "Smart Search"
+msgstr "スマート検索"
