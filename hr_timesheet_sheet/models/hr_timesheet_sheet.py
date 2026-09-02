@@ -339,14 +339,23 @@ class Sheet(models.Model):
     def _get_employee_approver(self):
         """Return the user set in the employee field configured on the company.
 
-        `sudo` is required because `ir.model.fields` is not readable by
-        `base.group_user`.
+        Both reads need `sudo`: `ir.model.fields` is not readable by
+        `base.group_user`, and employee fields are private unless mirrored on
+        `hr.employee.public`.
         """
         self.ensure_one()
         field = self.company_id.sudo().timesheet_sheet_approver_field_id
-        if not field or field.name not in self.employee_id._fields:
+        if not field or field.model != "hr.employee":
             return self.env["res.users"]
-        return self.employee_id[field.name]
+        # The `domain` of the setting is a client-side hint only, and the
+        # registry may have changed since it was set, so make sure the field
+        # really links to a user before dereferencing it.
+        employee = self.employee_id.sudo()
+        employee_field = employee._fields.get(field.name)
+        if not employee_field or employee_field.comodel_name != "res.users":
+            return self.env["res.users"]
+        # `with_env` keeps the `sudo` from escaping this method.
+        return employee[field.name].with_env(self.env)
 
     def _get_timesheet_sheet_company(self):
         self.ensure_one()
