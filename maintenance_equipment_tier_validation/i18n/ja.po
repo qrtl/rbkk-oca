@@ -1,0 +1,138 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* maintenance_equipment_tier_validation
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 18.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-07 00:19+0000\n"
+"PO-Revision-Date: 2026-09-07 00:19+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: maintenance_equipment_tier_validation
+#: model:ir.model.fields,field_description:maintenance_equipment_tier_validation.field_maintenance_equipment__can_review
+msgid "Can Review"
+msgstr "レビュー可能"
+
+#. module: maintenance_equipment_tier_validation
+#: model:ir.model.fields.selection,name:maintenance_equipment_tier_validation.selection__maintenance_equipment__state__cancel
+msgid "Cancelled"
+msgstr "キャンセル済"
+
+#. module: maintenance_equipment_tier_validation
+#: model:ir.model.fields.selection,name:maintenance_equipment_tier_validation.selection__maintenance_equipment__state__confirmed
+msgid "Confirmed"
+msgstr "確認済"
+
+#. module: maintenance_equipment_tier_validation
+#: model:ir.model.fields.selection,name:maintenance_equipment_tier_validation.selection__maintenance_equipment__state__draft
+msgid "Draft"
+msgstr "ドラフト"
+
+#. module: maintenance_equipment_tier_validation
+#: model_terms:ir.ui.view,arch_db:maintenance_equipment_tier_validation.hr_equipment_view_search
+msgid "Equipment to review"
+msgstr "レビュー対象の設備"
+
+#. module: maintenance_equipment_tier_validation
+#: model_terms:ir.ui.view,arch_db:maintenance_equipment_tier_validation.hr_equipment_view_search
+msgid "Equipment validated and ready to be activated"
+msgstr "承認済で稼働可能な設備"
+
+#. module: maintenance_equipment_tier_validation
+#: model:ir.model.fields,field_description:maintenance_equipment_tier_validation.field_maintenance_equipment__has_comment
+msgid "Has Comment"
+msgstr "コメントあり"
+
+#. module: maintenance_equipment_tier_validation
+#: model:ir.model.fields,field_description:maintenance_equipment_tier_validation.field_maintenance_equipment__hide_reviews
+msgid "Hide Reviews"
+msgstr "レビューを非表示"
+
+#. module: maintenance_equipment_tier_validation
+#: model:ir.model.fields,help:maintenance_equipment_tier_validation.field_maintenance_equipment__has_comment
+msgid "If set, Allow the reviewer to leave a comment on the review."
+msgstr "設定された場合、レビュアーがレビューにコメントを残せるようになります。"
+
+#. module: maintenance_equipment_tier_validation
+#: model:ir.model,name:maintenance_equipment_tier_validation.model_maintenance_equipment
+msgid "Maintenance Equipment"
+msgstr "整備設備"
+
+#. module: maintenance_equipment_tier_validation
+#: model:ir.model.fields,field_description:maintenance_equipment_tier_validation.field_maintenance_equipment__need_validation
+msgid "Need Validation"
+msgstr "要承認"
+
+#. module: maintenance_equipment_tier_validation
+#: model_terms:ir.ui.view,arch_db:maintenance_equipment_tier_validation.hr_equipment_view_search
+msgid "Needs my Review"
+msgstr "要レビュー"
+
+#. module: maintenance_equipment_tier_validation
+#: model:ir.model.fields,field_description:maintenance_equipment_tier_validation.field_maintenance_equipment__next_review
+msgid "Next Review"
+msgstr "次のレビュー"
+
+#. module: maintenance_equipment_tier_validation
+#: model:ir.model.fields,field_description:maintenance_equipment_tier_validation.field_maintenance_equipment__rejected
+msgid "Rejected"
+msgstr "拒否済"
+
+#. module: maintenance_equipment_tier_validation
+#: model:ir.model.fields,field_description:maintenance_equipment_tier_validation.field_maintenance_equipment__rejected_message
+msgid "Rejected Message"
+msgstr "拒否メッセージ"
+
+#. module: maintenance_equipment_tier_validation
+#: model:ir.model.fields,field_description:maintenance_equipment_tier_validation.field_maintenance_equipment__reviewer_ids
+msgid "Reviewers"
+msgstr "レビュアー"
+
+#. module: maintenance_equipment_tier_validation
+#: model:ir.model.fields,field_description:maintenance_equipment_tier_validation.field_maintenance_equipment__smart_search
+#: model:ir.model.fields,field_description:maintenance_equipment_tier_validation.field_tier_definition__smart_search
+msgid "Smart Search"
+msgstr "スマートサーチ"
+
+#. module: maintenance_equipment_tier_validation
+#: model:ir.model.fields,field_description:maintenance_equipment_tier_validation.field_maintenance_equipment__state
+msgid "State"
+msgstr "状態"
+
+#. module: maintenance_equipment_tier_validation
+#: model:ir.model,name:maintenance_equipment_tier_validation.model_tier_definition
+msgid "Tier Definition"
+msgstr "段階定義"
+
+#. module: maintenance_equipment_tier_validation
+#: model:ir.model.fields,field_description:maintenance_equipment_tier_validation.field_maintenance_equipment__to_validate_message
+msgid "To Validate Message"
+msgstr "未承認メッセージ"
+
+#. module: maintenance_equipment_tier_validation
+#: model:ir.model.fields,field_description:maintenance_equipment_tier_validation.field_maintenance_equipment__validated
+#: model_terms:ir.ui.view,arch_db:maintenance_equipment_tier_validation.hr_equipment_view_search
+msgid "Validated"
+msgstr "承認済"
+
+#. module: maintenance_equipment_tier_validation
+#: model:ir.model.fields,field_description:maintenance_equipment_tier_validation.field_maintenance_equipment__validated_message
+msgid "Validated Message"
+msgstr "承認メッセージ"
+
+#. module: maintenance_equipment_tier_validation
+#: model:ir.model.fields,field_description:maintenance_equipment_tier_validation.field_maintenance_equipment__validation_status
+msgid "Validation Status"
+msgstr "承認状態"
+
+#. module: maintenance_equipment_tier_validation
+#: model:ir.model.fields,field_description:maintenance_equipment_tier_validation.field_maintenance_equipment__review_ids
+msgid "Validations"
+msgstr "承認"
