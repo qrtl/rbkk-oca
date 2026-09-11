@@ -18,6 +18,7 @@ class StockMove(models.Model):
         copy=True,
         precompute=True,
     )
+    secondary_uom_qty = fields.Float(copy=False)
 
     @api.depends("secondary_uom_qty", "secondary_uom_id")
     def _compute_product_uom_qty(self):
@@ -60,8 +61,8 @@ class StockMove(models.Model):
         if not move or move.secondary_uom_id.dependency_type == "independent":
             return vals_list
         for vals in vals_list:
-            vals["secondary_uom_qty"] = move._convert_qty_to_secondary_uom(
-                vals["quantity"]
+            vals["secondary_uom_qty"] = move.secondary_uom_id._get_secondary_qty(
+                vals["quantity"], move.product_id.uom_id
             )
             vals["secondary_uom_id"] = {
                 "id": move.secondary_uom_id.id,
