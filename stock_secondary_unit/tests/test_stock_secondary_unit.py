@@ -121,6 +121,10 @@ class TestProductSecondaryUnit(BaseCommon):
         )
 
     def test_01_stock_secondary_unit_template(self):
+        # The template field mirrors its variants, so clear it on them to get
+        # the template without a second unit for inventory.
+        self.product_template.product_variant_ids.stock_secondary_uom_id = False
+        self.assertFalse(self.product_template.stock_secondary_uom_id)
         self.assertEqual(self.product_template.secondary_unit_qty_available, 0)
 
     def test_02_stock_secondary_unit_variant(self):
