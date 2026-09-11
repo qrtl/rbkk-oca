@@ -55,6 +55,16 @@ class ProductSecondaryUnitMixin(models.AbstractModel):
     def _get_uom_line(self):
         return self[self._secondary_unit_fields["uom_field"]]
 
+    def _get_product_uom(self):
+        """Return the UoM the secondary unit factor refers to.
+
+        Models where ``product_id`` is optional (a bill of materials defined at
+        template level, for instance) can override this to fall back on the
+        product template.
+        """
+        self.ensure_one()
+        return self.product_id[self._product_uom_field]
+
     # TODO: This method is now not used in this module. Deprecate it in future.
     def _get_factor_line(self):
         uom_line = self._get_uom_line()
@@ -78,7 +88,7 @@ class ProductSecondaryUnitMixin(models.AbstractModel):
         # Intended to be called from other operations if needed.
         self.ensure_one()
         uom_line = self._get_uom_line()
-        uom_product = self.product_id[self._product_uom_field]
+        uom_product = self._get_product_uom()
         if uom_line != uom_product:
             qty = uom_line._compute_quantity(qty, uom_product)
         return float_round(
@@ -125,7 +135,7 @@ class ProductSecondaryUnitMixin(models.AbstractModel):
             )
             qty_base = rec.secondary_uom_qty * rec.secondary_uom_id.factor
             uom_line = rec._get_uom_line()
-            uom_product = rec.product_id[rec._product_uom_field]
+            uom_product = rec._get_product_uom()
             qty_line = uom_product._compute_quantity(qty_base, uom_line)
             rec[rec._secondary_unit_fields["qty_field"]] = qty_line
 
@@ -149,56 +159,3 @@ class ProductSecondaryUnitMixin(models.AbstractModel):
         ):
             defaults["secondary_uom_qty"] = 1.0
         return defaults
-
-    def _get_secondary_uom_report_type(self):
-        """Return 'sale', 'purchase', or None."""
-        self.ensure_one()
-        if self._name == "sale.order.line" or (
-            self._name == "account.move.line"
-            and self.move_id.is_sale_document(include_receipts=True)
-        ):
-            return "sale"
-        if self._name == "purchase.order.line" or (
-            self._name == "account.move.line"
-            and self.move_id.is_purchase_document(include_receipts=True)
-        ):
-            return "purchase"
-        return None
-
-    def _get_secondary_uom_hide_col(self):
-        """Return whether secondary UoM column should be hidden on reports."""
-        self.ensure_one()
-        if not self.secondary_uom_id:
-            return True
-        report_type = self._get_secondary_uom_report_type()
-        if report_type == "purchase":
-            return self.company_id.hide_secondary_uom_column_purchase
-        if report_type == "sale":
-            return self.company_id.hide_secondary_uom_column_sale
-        return True
-
-    def get_secondary_uom_display_mode(self):
-        """Return display mode for secondary UoM price on reports."""
-        self.ensure_one()
-        if not self.secondary_uom_id:
-            return "primary"
-        report_type = self._get_secondary_uom_report_type()
-        if report_type == "purchase":
-            return self.company_id.secondary_uom_price_display_purchase
-        if report_type == "sale":
-            return self.company_id.secondary_uom_price_display_sale
-        return "primary"
-
-    def report_show_price_uom(self, uom_source=None):
-        """Return True if UoM should be shown in price column.
-
-        UoM is shown when the line displays multiple UoMs.
-        """
-        self.ensure_one()
-        if not self.secondary_uom_id:
-            return False
-        hide_col = self._get_secondary_uom_hide_col()
-        display_mode = self.get_secondary_uom_display_mode()
-        if uom_source == "primary_uom" and display_mode == "secondary":
-            return False
-        return not hide_col or display_mode == "both"
