@@ -188,6 +188,7 @@ class Sheet(models.Model):
         "employee_id",
         "company_id.timesheet_sheet_approver_field_id",
     )
+    @api.depends_context("uid")
     def _compute_can_review(self):
         for sheet in self:
             sheet.can_review = self.env.user in sheet._get_possible_reviewers()
@@ -352,7 +353,11 @@ class Sheet(models.Model):
         # really links to a user before dereferencing it.
         employee = self.employee_id.sudo()
         employee_field = employee._fields.get(field.name)
-        if not employee_field or employee_field.comodel_name != "res.users":
+        if (
+            not employee_field
+            or employee_field.comodel_name != "res.users"
+            or employee_field.type not in ("many2one", "many2many")
+        ):
             return self.env["res.users"]
         # `with_env` keeps the `sudo` from escaping this method.
         return employee[field.name].with_env(self.env)

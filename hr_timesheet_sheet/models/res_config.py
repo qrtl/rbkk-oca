@@ -27,8 +27,5 @@ class ResConfig(models.TransientModel):
     )
 
     timesheet_sheet_approver_field_id = fields.Many2one(
-        related="company_id.timesheet_sheet_approver_field_id",
-        readonly=False,
-        domain="[('model', '=', 'hr.employee'), ('relation', '=', 'res.users'), "
-        "('ttype', '=', 'many2one')]",
+        related="company_id.timesheet_sheet_approver_field_id", readonly=False
     )
