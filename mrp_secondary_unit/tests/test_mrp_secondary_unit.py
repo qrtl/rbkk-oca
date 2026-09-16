@@ -132,6 +132,30 @@ class TestMrpSecondaryUnit(TransactionCase):
         # 1 bag of 5 kg -> 5 kg -> 5000 g
         self.assertEqual(self.bom.bom_line_ids.product_qty, 5000.0)
 
+    def test_bom_secondary_unit_reset_on_product_change(self):
+        """A unit of the previous product would keep converting the quantity
+        with a foreign factor, so it is dropped."""
+        self.bom.product_tmpl_id = self.byproduct.product_tmpl_id
+        self.assertFalse(self.bom.secondary_uom_id)
+        self.assertEqual(self.bom.secondary_uom_qty, 0.0)
+
+    def test_bom_line_secondary_unit_reset_on_product_change(self):
+        line = self.bom.bom_line_ids
+        line.product_id = self.byproduct
+        self.assertFalse(line.secondary_uom_id)
+        self.assertEqual(line.secondary_uom_qty, 0.0)
+
+    def test_bom_byproduct_secondary_unit_reset_on_product_change(self):
+        byproduct = self.bom.byproduct_ids
+        byproduct.product_id = self.component
+        self.assertFalse(byproduct.secondary_uom_id)
+        self.assertEqual(byproduct.secondary_uom_qty, 0.0)
+
+    def test_bom_secondary_unit_kept_on_unrelated_change(self):
+        self.bom.code = "Other reference"
+        self.assertEqual(self.bom.secondary_uom_id, self.finished_pallet)
+        self.assertEqual(self.bom.secondary_uom_qty, 1.0)
+
     def test_bom_defined_on_template(self):
         """A bill of materials without a variant falls back on the template to
         resolve the UoM the factor refers to."""
