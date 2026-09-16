@@ -22,22 +22,18 @@ class MrpBom(models.Model):
         self.ensure_one()
         return (self.product_id or self.product_tmpl_id)[self._product_uom_field]
 
-    @api.model
-    def _get_secondary_uom_id_depends(self):
-        return super()._get_secondary_uom_id_depends() + ["product_tmpl_id"]
-
-    def _is_secondary_uom_allowed(self):
-        """A bill of materials is defined on the template, so a unit of the
-        template is allowed even when it carries a variant of its own."""
+    def _get_product_secondary_uom(self):
+        """A bill of materials is defined on the template, and only optionally
+        narrowed down to one of its variants."""
         self.ensure_one()
-        secondary_uom = self.secondary_uom_id
-        if secondary_uom.product_tmpl_id != self.product_tmpl_id:
-            return False
         return (
-            not self.product_id
-            or not secondary_uom.product_id
-            or secondary_uom.product_id == self.product_id
+            self.product_id.stock_secondary_uom_id
+            or self.product_tmpl_id.stock_secondary_uom_id
         )
+
+    @api.onchange("product_tmpl_id")
+    def onchange_product_tmpl_id_for_secondary(self):
+        self.onchange_product_id_for_secondary()
 
 
 class MrpBomLine(models.Model):

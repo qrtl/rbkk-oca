@@ -20,10 +20,16 @@ class MrpProduction(models.Model):
         default=None,
     )
 
-    @api.depends("bom_id")
+    @api.depends("bom_id", "product_id")
     def _compute_secondary_uom_id(self):
+        """Follow the unit of the bill of materials, falling back on the
+        secondary unit of the product when there is none."""
         for production in self:
-            production.secondary_uom_id = production.bom_id.secondary_uom_id
+            production.secondary_uom_id = (
+                production.bom_id.secondary_uom_id
+                or production.product_id.stock_secondary_uom_id
+                or production.product_id.product_tmpl_id.stock_secondary_uom_id
+            )
 
     @api.model
     def _get_secondary_uom_qty_depends(self):

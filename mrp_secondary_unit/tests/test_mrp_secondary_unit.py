@@ -132,24 +132,115 @@ class TestMrpSecondaryUnit(TransactionCase):
         # 1 bag of 5 kg -> 5 kg -> 5000 g
         self.assertEqual(self.bom.bom_line_ids.product_qty, 5000.0)
 
-    def test_bom_secondary_unit_reset_on_product_change(self):
+    def test_bom_secondary_unit_default_from_product(self):
+        """The default manufacturing unit of the product is proposed on a new
+        bill of materials, with 1 as the default secondary quantity."""
+        self.finished.stock_secondary_uom_id = self.finished_pallet
+        with Form(self.env["mrp.bom"]) as bom_form:
+            bom_form.product_tmpl_id = self.finished.product_tmpl_id
+            self.assertEqual(bom_form.secondary_uom_id, self.finished_pallet)
+            self.assertEqual(bom_form.secondary_uom_qty, 1.0)
+            self.assertEqual(bom_form.product_qty, 20.0)
+
+    def _multi_variant_product(self):
+        """Return a template with two variants, a default unit of its own and
+        another one on its first variant."""
+        attribute = self.env["product.attribute"].create(
+            {
+                "name": "Test size",
+                "value_ids": [
+                    Command.create({"name": "Small"}),
+                    Command.create({"name": "Large"}),
+                ],
+            }
+        )
+        template = self.env["product.template"].create(
+            {
+                "name": "Test product with variants",
+                "is_storable": True,
+                "uom_id": self.uom_unit.id,
+                "attribute_line_ids": [
+                    Command.create(
+                        {
+                            "attribute_id": attribute.id,
+                            "value_ids": [Command.set(attribute.value_ids.ids)],
+                        }
+                    )
+                ],
+            }
+        )
+        self.assertEqual(len(template.product_variant_ids), 2)
+        template_unit, variant_unit = self.env["product.secondary.unit"].create(
+            [
+                {
+                    "name": "Box of 6",
+                    "product_tmpl_id": template.id,
+                    "uom_id": self.uom_unit.id,
+                    "factor": 6.0,
+                },
+                {
+                    "name": "Box of 10",
+                    "product_tmpl_id": template.id,
+                    "product_id": template.product_variant_ids[0].id,
+                    "uom_id": self.uom_unit.id,
+                    "factor": 10.0,
+                },
+            ]
+        )
+        template.stock_secondary_uom_id = template_unit
+        template.product_variant_ids[0].stock_secondary_uom_id = variant_unit
+        return template, template_unit, variant_unit
+
+    def test_bom_secondary_unit_default_from_template(self):
+        """A bill of materials is defined on the template, so a bill covering
+        every variant takes the default of the template."""
+        template, template_unit, _variant_unit = self._multi_variant_product()
+        with Form(self.env["mrp.bom"]) as bom_form:
+            bom_form.product_tmpl_id = template
+            self.assertFalse(bom_form.product_id)
+            self.assertEqual(bom_form.secondary_uom_id, template_unit)
+
+    def test_bom_secondary_unit_default_of_variant_wins(self):
+        """A bill narrowed down to one variant takes the default of that
+        variant instead."""
+        template, _template_unit, variant_unit = self._multi_variant_product()
+        with Form(self.env["mrp.bom"]) as bom_form:
+            bom_form.product_tmpl_id = template
+            bom_form.product_id = template.product_variant_ids[0]
+            self.assertEqual(bom_form.secondary_uom_id, variant_unit)
+
+    def test_bom_line_secondary_unit_default_from_product(self):
+        self.component.stock_secondary_uom_id = self.component_bag
+        with Form(self.bom) as bom_form:
+            with bom_form.bom_line_ids.new() as line_form:
+                line_form.product_id = self.component
+                self.assertEqual(line_form.secondary_uom_id, self.component_bag)
+                self.assertEqual(line_form.secondary_uom_qty, 1.0)
+                self.assertEqual(line_form.product_qty, 5.0)
+
+    def test_bom_byproduct_secondary_unit_default_from_product(self):
+        self.byproduct.stock_secondary_uom_id = self.byproduct_crate
+        with Form(self.bom) as bom_form:
+            with bom_form.byproduct_ids.new() as byproduct_form:
+                byproduct_form.product_id = self.byproduct
+                self.assertEqual(byproduct_form.secondary_uom_id, self.byproduct_crate)
+                self.assertEqual(byproduct_form.secondary_uom_qty, 1.0)
+
+    def test_bom_line_secondary_unit_replaced_on_product_change(self):
         """A unit of the previous product would keep converting the quantity
-        with a foreign factor, so it is dropped."""
-        self.bom.product_tmpl_id = self.byproduct.product_tmpl_id
-        self.assertFalse(self.bom.secondary_uom_id)
-        self.assertEqual(self.bom.secondary_uom_qty, 0.0)
+        with a foreign factor, so picking another product replaces it."""
+        self.byproduct.stock_secondary_uom_id = self.byproduct_crate
+        with Form(self.bom) as bom_form:
+            with bom_form.bom_line_ids.edit(0) as line_form:
+                self.assertEqual(line_form.secondary_uom_id, self.component_bag)
+                line_form.product_id = self.byproduct
+                self.assertEqual(line_form.secondary_uom_id, self.byproduct_crate)
 
-    def test_bom_line_secondary_unit_reset_on_product_change(self):
-        line = self.bom.bom_line_ids
-        line.product_id = self.byproduct
-        self.assertFalse(line.secondary_uom_id)
-        self.assertEqual(line.secondary_uom_qty, 0.0)
-
-    def test_bom_byproduct_secondary_unit_reset_on_product_change(self):
-        byproduct = self.bom.byproduct_ids
-        byproduct.product_id = self.component
-        self.assertFalse(byproduct.secondary_uom_id)
-        self.assertEqual(byproduct.secondary_uom_qty, 0.0)
+    def test_bom_line_secondary_unit_dropped_on_product_without_default(self):
+        with Form(self.bom) as bom_form:
+            with bom_form.bom_line_ids.edit(0) as line_form:
+                line_form.product_id = self.byproduct
+                self.assertFalse(line_form.secondary_uom_id)
 
     def test_bom_secondary_unit_kept_on_unrelated_change(self):
         self.bom.code = "Other reference"
@@ -170,6 +261,17 @@ class TestMrpSecondaryUnit(TransactionCase):
         self.assertEqual(production.secondary_uom_id, self.finished_pallet)
         self.assertEqual(production.product_qty, 20.0)
         self.assertEqual(production.secondary_uom_qty, 1.0)
+
+    def test_production_secondary_unit_from_product_without_bom(self):
+        """Without a bill of materials to follow, the order falls back on the
+        default manufacturing unit of the product."""
+        self.finished.stock_secondary_uom_id = self.finished_pallet
+        unrelated_bom = self.bom
+        unrelated_bom.active = False
+        with Form(self.env["mrp.production"]) as production_form:
+            production_form.product_id = self.finished
+            self.assertFalse(production_form.bom_id)
+            self.assertEqual(production_form.secondary_uom_id, self.finished_pallet)
 
     def test_production_secondary_unit_picked_keeps_qty_to_produce(self):
         """Picking a secondary unit derives the secondary quantity from the

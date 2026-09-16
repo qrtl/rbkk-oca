@@ -6,6 +6,12 @@ component line or on a by-product line and enter the *Secondary Qty*. The
 quantity in the primary unit is computed from it, so a recipe can be written as
 "2 boxes of 10 units" and stored as 20 units.
 
+The *Second unit for inventory* set on the product is proposed by default, with
+a secondary quantity of 1, when you pick the product on a bill of materials or
+on one of its lines. What is manufactured ends up in inventory, where the
+quantity on hand is counted in that same unit. Any other secondary unit of the
+product can still be picked instead.
+
 Picking the unit alone never changes a quantity that is already there: the
 secondary quantity is derived from it, and only a secondary quantity that is
 entered afterwards drives the quantity in the primary unit.
