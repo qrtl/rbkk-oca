@@ -6,7 +6,7 @@ from odoo import api, models
 
 class MrpBomSecondaryUnitMixin(models.AbstractModel):
     _name = "mrp.bom.secondary.unit.mixin"
-    _inherit = "product.secondary.unit.mixin"
+    _inherit = "mrp.secondary.unit.mixin"
     _description = "MRP BoM Secondary Unit Mixin"
     _secondary_unit_fields = {
         "qty_field": "product_qty",
@@ -46,7 +46,4 @@ class MrpBomSecondaryUnitMixin(models.AbstractModel):
 
     @api.depends("secondary_uom_qty", "secondary_uom_id")
     def _compute_product_qty(self):
-        for record in self:
-            if record.secondary_uom_id and not record.secondary_uom_qty:
-                record._onchange_helper_product_uom_for_secondary()
         self._compute_helper_target_field_qty()

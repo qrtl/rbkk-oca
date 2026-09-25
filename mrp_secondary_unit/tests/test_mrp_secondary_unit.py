@@ -135,7 +135,11 @@ class TestMrpSecondaryUnit(TransactionCase):
     def test_bom_secondary_unit_default_from_product(self):
         """The default manufacturing unit of the product is proposed on a new
         bill of materials, with 1 as the default secondary quantity."""
+        # The bill covers every variant, so it reads the default of the
+        # template, which stock_secondary_unit keeps apart from the one of the
+        # variant.
         self.finished.stock_secondary_uom_id = self.finished_pallet
+        self.finished.product_tmpl_id.stock_secondary_uom_id = self.finished_pallet
         with Form(self.env["mrp.bom"]) as bom_form:
             bom_form.product_tmpl_id = self.finished.product_tmpl_id
             self.assertEqual(bom_form.secondary_uom_id, self.finished_pallet)
@@ -343,6 +347,17 @@ class TestMrpSecondaryUnit(TransactionCase):
         bom.secondary_uom_id = self.finished_pallet
         self.assertEqual(bom.product_qty, 10.0)
         self.assertEqual(bom.secondary_uom_qty, 0.5)
+
+    def test_bom_secondary_unit_picked_in_form_keeps_qty(self):
+        """Picking the unit after typing the quantity must keep it: a quantity
+        reset to zero would also break the constraint keeping it positive."""
+        with Form(self.env["mrp.bom"]) as bom_form:
+            bom_form.product_tmpl_id = self.finished.product_tmpl_id
+            bom_form.product_qty = 10.0
+            bom_form.secondary_uom_id = self.finished_pallet
+            self.assertEqual(bom_form.product_qty, 10.0)
+            self.assertEqual(bom_form.secondary_uom_qty, 0.5)
+        self.assertEqual(bom_form.record.product_qty, 10.0)
 
     def test_bom_line_secondary_unit_picked_keeps_qty(self):
         line = self.bom.bom_line_ids

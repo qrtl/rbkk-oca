@@ -6,7 +6,7 @@ from odoo import api, fields, models
 
 class MrpProduction(models.Model):
     _name = "mrp.production"
-    _inherit = ["mrp.production", "product.secondary.unit.mixin"]
+    _inherit = ["mrp.production", "mrp.secondary.unit.mixin"]
     _secondary_unit_fields = {
         "qty_field": "product_qty",
         "uom_field": "product_uom_id",
