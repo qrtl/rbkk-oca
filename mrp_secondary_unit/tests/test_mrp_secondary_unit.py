@@ -143,8 +143,8 @@ class TestMrpSecondaryUnit(TransactionCase):
             self.assertEqual(bom_form.product_qty, 20.0)
 
     def _multi_variant_product(self):
-        """Return a template with two variants, a default unit of its own and
-        another one on its first variant."""
+        """Return a template with two variants, the default unit shared by
+        every variant and a second unit defined on the first variant."""
         attribute = self.env["product.attribute"].create(
             {
                 "name": "Test size",
@@ -187,13 +187,14 @@ class TestMrpSecondaryUnit(TransactionCase):
                 },
             ]
         )
+        # The template unit mirrors the variants, so writing it on the
+        # template is what gives every variant the same default.
         template.stock_secondary_uom_id = template_unit
-        template.product_variant_ids[0].stock_secondary_uom_id = variant_unit
         return template, template_unit, variant_unit
 
     def test_bom_secondary_unit_default_from_template(self):
         """A bill of materials is defined on the template, so a bill covering
-        every variant takes the default of the template."""
+        every variant takes the default its variants share."""
         template, template_unit, _variant_unit = self._multi_variant_product()
         with Form(self.env["mrp.bom"]) as bom_form:
             bom_form.product_tmpl_id = template
@@ -204,6 +205,7 @@ class TestMrpSecondaryUnit(TransactionCase):
         """A bill narrowed down to one variant takes the default of that
         variant instead."""
         template, _template_unit, variant_unit = self._multi_variant_product()
+        template.product_variant_ids[0].stock_secondary_uom_id = variant_unit
         with Form(self.env["mrp.bom"]) as bom_form:
             bom_form.product_tmpl_id = template
             bom_form.product_id = template.product_variant_ids[0]
