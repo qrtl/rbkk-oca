@@ -8,6 +8,7 @@
     "license": "AGPL-3",
     "author": "Quartile, Odoo Community Association (OCA)",
     "website": "https://github.com/OCA/maintenance",
+    "maintainers": ["smorita7749"],
     "depends": ["maintenance"],
     "data": [
         "security/res_groups.xml",

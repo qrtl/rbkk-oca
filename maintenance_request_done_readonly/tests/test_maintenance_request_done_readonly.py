@@ -132,3 +132,21 @@ class TestMaintenanceRequestDoneReadonly(TransactionCase):
         # are allow-listed, so it must not be blocked by the lock guard.
         request.with_user(self.user).message_post(body="Still can comment")
         self.assertTrue(request.message_ids)
+
+    def test_regular_user_cannot_delete_completed(self):
+        request = self._new_request(self.user)
+        request.with_user(self.user).write({"stage_id": self.done_stage.id})
+        with self.assertRaises(UserError):
+            request.with_user(self.user).unlink()
+        self.assertTrue(request.exists())
+
+    def test_regular_user_can_delete_open(self):
+        request = self._new_request(self.user)
+        request.with_user(self.user).unlink()
+        self.assertFalse(request.exists())
+
+    def test_editor_can_delete_completed(self):
+        request = self._new_request(self.editor)
+        request.with_user(self.editor).write({"stage_id": self.done_stage.id})
+        request.with_user(self.editor).unlink()
+        self.assertFalse(request.exists())

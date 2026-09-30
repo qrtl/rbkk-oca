@@ -1,7 +1,7 @@
 # Copyright 2026 Quartile (https://www.quartile.co)
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
-from odoo import _, models
+from odoo import _, api, models
 from odoo.exceptions import UserError
 
 
@@ -26,16 +26,18 @@ class MaintenanceRequest(models.Model):
             name.strip() for name in names.split(",") if name.strip()
         }
 
+    def _can_edit_done(self):
+        return self.env.user.has_group(
+            "maintenance_request_done_readonly.group_maintenance_request_edit_done"
+        )
+
     def write(self, vals):
         # A completed (done) request can only be edited by users in the edit
         # group. Checked pre-write, so everyone can still complete a request
         # (move it to done).
         if (
             not self.env.context.get("mnt_done_bypass_lock")
-            and not self.env.user.has_group(
-                "maintenance_request_done_readonly."
-                "group_maintenance_request_edit_done"
-            )
+            and not self._can_edit_done()
             and (set(vals) - self._writable_fields_when_done())
             and (locked := self.filtered("done"))
         ):
@@ -52,3 +54,14 @@ class MaintenanceRequest(models.Model):
         if stage_id and self.env["maintenance.stage"].browse(stage_id).done:
             self = self.with_context(mnt_done_bypass_lock=True)
         return super().write(vals)
+
+    @api.ondelete(at_uninstall=False)
+    def _unlink_except_done(self):
+        if not self._can_edit_done() and (locked := self.filtered("done")):
+            raise UserError(
+                _(
+                    "'%s' is completed and can only be deleted by users in the "
+                    "'Maintenance: Edit Completed Requests' group.",
+                    locked[0].display_name,
+                )
+            )

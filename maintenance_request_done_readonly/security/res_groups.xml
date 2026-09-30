@@ -3,7 +3,7 @@
     <record id="group_maintenance_request_edit_done" model="res.groups">
         <field name="name">Maintenance: Edit Completed Requests</field>
         <field name="category_id" ref="base.module_category_usability" />
-        <field name="implied_ids" eval="[(4, ref('base.group_user'))]" />
+        <field name="implied_ids" eval="[Command.link(ref('base.group_user'))]" />
         <field
             name="comment"
         >The user will be able to edit completed maintenance requests.</field>
@@ -12,7 +12,7 @@
     <record id="maintenance.group_equipment_manager" model="res.groups">
         <field
             name="implied_ids"
-            eval="[(4, ref('group_maintenance_request_edit_done'))]"
+            eval="[Command.link(ref('group_maintenance_request_edit_done'))]"
         />
     </record>
 </odoo>

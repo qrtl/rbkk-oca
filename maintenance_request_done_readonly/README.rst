@@ -30,17 +30,18 @@ Maintenance Request Done Read-only
 
 This module makes completed maintenance requests read-only.
 
-Once a request reaches a done stage, it can no longer be edited or
-reopened: any attempt to change its fields (including moving it back out
-of the done stage) is blocked. Only members of the *Maintenance: Edit
-Completed Requests* group keep full access to completed requests.
-*Equipment Manager* users get that group by default, so it can also be
-granted to users who should be able to correct completed requests
-without being maintenance managers.
+Once a request reaches a done stage, it can no longer be edited,
+reopened or deleted: any attempt to change its fields (including moving
+it back out of the done stage) or to delete it is blocked. Only members
+of the *Maintenance: Edit Completed Requests* group keep full access to
+completed requests. *Equipment Manager* users get that group by default,
+so it can also be granted to users who should be able to correct
+completed requests without being maintenance managers.
 
-The restriction is enforced on write, so every field is locked by
-default, without having to enumerate them. Completing a request and its
-follow-up (commenting, following, scheduling activities) keep working.
+The restriction is enforced on write and unlink, so every field is
+locked by default, without having to enumerate them. Completing a
+request and its follow-up (commenting, following, scheduling activities)
+keep working.
 
 If some fields should stay editable after completion, edit the
 ``maintenance_request_done_readonly.editable_fields`` system parameter
@@ -89,6 +90,14 @@ This module is maintained by the OCA.
 OCA, or the Odoo Community Association, is a nonprofit organization whose
 mission is to support the collaborative development of Odoo features and
 promote its widespread use.
+
+.. |maintainer-smorita7749| image:: https://github.com/smorita7749.png?size=40px
+    :target: https://github.com/smorita7749
+    :alt: smorita7749
+
+Current `maintainer <https://odoo-community.org/page/maintainer-role>`__:
+
+|maintainer-smorita7749| 
 
 This module is part of the `OCA/maintenance <https://github.com/OCA/maintenance/tree/18.0/maintenance_request_done_readonly>`_ project on GitHub.
 
