@@ -8,7 +8,7 @@
         <field name="inherit_id" ref="maintenance.hr_equipment_view_tree" />
         <field name="arch" type="xml">
             <field name="name" position="after">
-                <field name="state" optional="show" />
+                <field name="state" optional="hide" />
                 <field
                     name="validation_status"
                     widget="badge"
