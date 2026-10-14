@@ -18,6 +18,7 @@ class StockMove(models.Model):
         copy=True,
         precompute=True,
     )
+    secondary_uom_qty = fields.Float(copy=False)
 
     @api.depends("secondary_uom_qty", "secondary_uom_id")
     def _compute_product_uom_qty(self):
@@ -26,6 +27,27 @@ class StockMove(models.Model):
     @api.onchange("product_uom")
     def onchange_product_uom_for_secondary(self):
         self._onchange_helper_product_uom_for_secondary()
+
+    @api.onchange("product_id")
+    def _onchange_product_id_stock_secondary_unit(self):
+        secondary_uom = self.product_id._get_stock_secondary_uom()
+        if self.secondary_uom_id != secondary_uom:
+            self.secondary_uom_id = secondary_uom
+            if secondary_uom:
+                self.secondary_uom_qty = 1.0
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        # Moves whose origin decides the secondary unit (e.g. a purchase line)
+        # pass secondary_uom_id explicitly, even when empty, so keep it.
+        for vals in vals_list:
+            if "secondary_uom_id" in vals or not vals.get("product_id"):
+                continue
+            product = self.env["product.product"].browse(vals["product_id"])
+            secondary_uom = product._get_stock_secondary_uom()
+            if secondary_uom:
+                vals["secondary_uom_id"] = secondary_uom.id
+        return super().create(vals_list)
 
     @api.model
     def _prepare_merge_moves_distinct_fields(self):
@@ -38,8 +60,11 @@ class StockMove(models.Model):
         # Override when creating backorder
         # to update secondary unit quantities
         res = super()._recompute_state()
-        for move in self:
-            move.onchange_product_uom_for_secondary()
+        # Only follow the demand: recomputing it back from the rounded
+        # secondary quantity would change it (e.g. 10 kg -> 1.43 x 7 kg)
+        with self.env.protecting([self._fields["product_uom_qty"]], self):
+            for move in self:
+                move.onchange_product_uom_for_secondary()
         return res
 
     @api.model
@@ -60,8 +85,8 @@ class StockMove(models.Model):
         if not move or move.secondary_uom_id.dependency_type == "independent":
             return vals_list
         for vals in vals_list:
-            vals["secondary_uom_qty"] = move._convert_qty_to_secondary_uom(
-                vals["quantity"]
+            vals["secondary_uom_qty"] = move.secondary_uom_id._get_secondary_qty(
+                vals["quantity"], move.product_id.uom_id
             )
             vals["secondary_uom_id"] = {
                 "id": move.secondary_uom_id.id,

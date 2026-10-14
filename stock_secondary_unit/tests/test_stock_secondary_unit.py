@@ -121,6 +121,10 @@ class TestProductSecondaryUnit(BaseCommon):
         )
 
     def test_01_stock_secondary_unit_template(self):
+        # The template field mirrors its variants, so clear it on them to get
+        # the template without a second unit for inventory.
+        self.product_template.product_variant_ids.stock_secondary_uom_id = False
+        self.assertFalse(self.product_template.stock_secondary_uom_id)
         self.assertEqual(self.product_template.secondary_unit_qty_available, 0)
 
     def test_02_stock_secondary_unit_variant(self):
@@ -292,6 +296,143 @@ class TestProductSecondaryUnit(BaseCommon):
         self.assertEqual(quant.secondary_uom_id, secondary_uom_2)
         self.assertEqual(quant.secondary_uom_qty, 40)
 
+    def test_stock_quant_secondary_uom_inventory_quantity(self):
+        quant = self.quant_white
+        self.assertEqual(quant.secondary_uom_id.factor, 0.5)
+        # Counting in the secondary unit fills in the counted quantity
+        quant.write({"secondary_uom_inventory_quantity": 30})
+        self.assertEqual(quant.inventory_quantity, 15)
+        self.assertTrue(quant.inventory_quantity_set)
+        self.assertEqual(quant.inventory_diff_quantity, 5)
+        # Setting the counted quantity converts back to the secondary unit
+        quant.inventory_quantity = 20
+        self.assertEqual(quant.secondary_uom_inventory_quantity, 40)
+        # The Clear and Set buttons keep the secondary counted quantity in sync
+        quant.action_clear_inventory_quantity()
+        self.assertEqual(quant.secondary_uom_inventory_quantity, 0)
+        quant.action_set_inventory_quantity()
+        self.assertEqual(quant.secondary_uom_inventory_quantity, 20)
+        # Applying a count entered in the secondary unit updates the quantity
+        quant.write({"secondary_uom_inventory_quantity": 50})
+        quant.action_apply_inventory()
+        self.assertEqual(quant.quantity, 25)
+        self.assertEqual(quant.secondary_uom_qty, 50)
+
+    def test_stock_quant_create_secondary_uom_inventory_quantity(self):
+        self.env.user.groups_id = [
+            Command.link(self.env.ref("stock.group_stock_manager").id)
+        ]
+        product = self.product_template.product_variant_ids[0]
+        # In inventory mode the counted quantity is resolved before creation, so
+        # the existing quant is updated instead of a new one being created
+        quant = (
+            self.env["stock.quant"]
+            .with_context(inventory_mode=True)
+            .create(
+                {
+                    "product_id": product.id,
+                    "location_id": self.warehouse.lot_stock_id.id,
+                    "secondary_uom_inventory_quantity": 8,
+                }
+            )
+        )
+        self.assertEqual(quant, self.quant_white)
+        self.assertEqual(quant.inventory_quantity, 4)
+        self.assertEqual(quant.secondary_uom_inventory_quantity, 8)
+
+    def test_stock_quant_onchange_secondary_uom_inventory_quantity(self):
+        """Counting in the secondary unit fills in the counted quantity live."""
+        quant = self.quant_white
+        self.assertEqual(quant.secondary_uom_id.factor, 0.5)
+        res = quant.onchange(
+            {
+                "id": quant.id,
+                "inventory_quantity": 0.0,
+                "secondary_uom_inventory_quantity": 30.0,
+            },
+            ["secondary_uom_inventory_quantity"],
+            {
+                "inventory_quantity": {},
+                "secondary_uom_inventory_quantity": {},
+            },
+        )
+        self.assertEqual(res["value"]["inventory_quantity"], 15)
+
+    def test_stock_quant_inventory_quantity_prevails_over_secondary(self):
+        """The counted quantity prevails whenever it is submitted.
+
+        The web client fills in ``secondary_uom_inventory_quantity`` from the
+        counted quantity and sends both back on save. Converting that value
+        back could alter the counted quantity the user typed, as the conversion
+        is not always invertible for a secondary unit that cannot be split.
+        """
+        uom_case = self.env["uom.uom"].create(
+            {
+                "name": "Case of 12",
+                "category_id": self.product_uom_unit.category_id.id,
+                "uom_type": "bigger",
+                "factor_inv": 12,
+                "rounding": 1.0,
+            }
+        )
+        secondary_uom_case = self.env["product.secondary.unit"].create(
+            {
+                "name": "case-12",
+                "code": "D",
+                "product_tmpl_id": self.product_template.id,
+                "uom_id": uom_case.id,
+                "factor": 12,
+            }
+        )
+        quant = self.quant_white
+        quant.product_id.stock_secondary_uom_id = secondary_uom_case
+        # What the client shows once the user types the counted quantity
+        quant.inventory_quantity = 7
+        secondary = quant.secondary_uom_inventory_quantity
+        self.assertEqual(secondary, 1.0)
+        # What the client sends on save: both fields, secondary as computed
+        quant.write(
+            {
+                "inventory_quantity": 7,
+                "secondary_uom_inventory_quantity": secondary,
+            }
+        )
+        self.assertEqual(quant.inventory_quantity, 7)
+        # The counted quantity prevails even when the two disagree
+        quant.write({"inventory_quantity": 7, "secondary_uom_inventory_quantity": 3})
+        self.assertEqual(quant.inventory_quantity, 7)
+        # On its own, the secondary unit still drives the count
+        quant.write({"secondary_uom_inventory_quantity": 3})
+        self.assertEqual(quant.inventory_quantity, 36)
+        # Same precedence on creation
+        self.env.user.groups_id = [
+            Command.link(self.env.ref("stock.group_stock_manager").id)
+        ]
+        created = (
+            self.env["stock.quant"]
+            .with_context(inventory_mode=True)
+            .create(
+                {
+                    "product_id": quant.product_id.id,
+                    "location_id": self.warehouse.lot_stock_id.id,
+                    "inventory_quantity": 7,
+                    "secondary_uom_inventory_quantity": secondary,
+                }
+            )
+        )
+        self.assertEqual(created.inventory_quantity, 7)
+
+    def test_stock_quant_independent_secondary_uom_inventory_quantity(self):
+        product = self.product_template.product_variant_ids[0]
+        product.stock_secondary_uom_id.dependency_type = "independent"
+        quant = self.quant_white
+        # An independent secondary unit has no factor relation to the product
+        # unit, so it cannot be used to count
+        quant.write({"secondary_uom_inventory_quantity": 30})
+        self.assertEqual(quant.inventory_quantity, 0)
+        quant.invalidate_recordset()
+        self.assertEqual(quant.secondary_uom_inventory_quantity, 0)
+
     def test_action_generate_lot_line_vals(self):
         picking = self.env["stock.picking"].create(
             {
@@ -367,3 +508,79 @@ class TestProductSecondaryUnit(BaseCommon):
         )
         self.assertEqual(vals[1]["quantity"], 1)
         self.assertEqual(vals[1]["secondary_uom_qty"], 0.5)
+
+    def _create_move(self, product, **vals):
+        return self.env["stock.move"].create(
+            {
+                "name": product.display_name,
+                "product_id": product.id,
+                "product_uom_qty": 10.0,
+                "location_id": self.location_stock.id,
+                "location_dest_id": self.env.ref("stock.stock_location_customers").id,
+                **vals,
+            }
+        )
+
+    def test_default_secondary_unit_form(self):
+        product = self.product_template.product_variant_ids[0]
+        with Form(
+            self.StockPicking.with_context(
+                default_picking_type_id=self.picking_type_out.id,
+            )
+        ) as picking_form:
+            with picking_form.move_ids_without_package.new() as move:
+                move.product_id = product
+                self.assertEqual(move.secondary_uom_id, product.stock_secondary_uom_id)
+                self.assertEqual(move.secondary_uom_qty, 1)
+                self.assertEqual(move.product_uom_qty, 0.5)
+        picking = picking_form.save()
+        self.assertEqual(
+            picking.move_ids.secondary_uom_id, product.stock_secondary_uom_id
+        )
+
+    def test_default_secondary_unit_create(self):
+        product = self.product_template.product_variant_ids[0]
+        move = self._create_move(product)
+        self.assertEqual(move.secondary_uom_id, product.stock_secondary_uom_id)
+        self.assertEqual(move.product_uom_qty, 10)
+        self.assertEqual(move.secondary_uom_qty, 20)
+
+    def test_default_secondary_unit_create_from_template(self):
+        product = self.product_template.product_variant_ids[1]
+        product.stock_secondary_uom_id = False
+        self.product_template.stock_secondary_uom_id = (
+            self.product_template.secondary_uom_ids[2]
+        )
+        move = self._create_move(product)
+        self.assertEqual(
+            move.secondary_uom_id, self.product_template.secondary_uom_ids[2]
+        )
+        self.assertEqual(move.secondary_uom_qty, 1)
+
+    def test_default_secondary_unit_keep_given_value(self):
+        product = self.product_template.product_variant_ids[0]
+        # An empty secondary unit passed explicitly (e.g. from a purchase line
+        # without one) is kept
+        move = self._create_move(product, secondary_uom_id=False)
+        self.assertFalse(move.secondary_uom_id)
+        other_uom = self.product_template.secondary_uom_ids[1]
+        move = self._create_move(product, secondary_uom_id=other_uom.id)
+        self.assertEqual(move.secondary_uom_id, other_uom)
+
+    def test_default_secondary_unit_keeps_demand(self):
+        product = self.product_template.product_variant_ids[0]
+        # 10 kg is 1.43 units of 7 kg once rounded, i.e. 10.01 kg
+        product.stock_secondary_uom_id = self.env["product.secondary.unit"].create(
+            {
+                "name": "box 7",
+                "product_tmpl_id": self.product_template.id,
+                "uom_id": self.product_uom_unit.id,
+                "factor": 7,
+            }
+        )
+        move = self._create_move(product)
+        self.assertEqual(move.secondary_uom_qty, 1.43)
+        move._action_confirm()
+        move._action_assign()
+        self.assertEqual(move.product_uom_qty, 10)
+        self.assertEqual(move.quantity, 10)
