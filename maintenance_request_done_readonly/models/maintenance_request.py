@@ -1,5 +1,5 @@
 # Copyright 2026 Quartile (https://www.quartile.co)
-# License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
+# License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
 from odoo import _, api, models
 from odoo.exceptions import UserError
@@ -11,20 +11,15 @@ class MaintenanceRequest(models.Model):
     def _writable_fields_when_done(self):
         """Fields a user without the edit group may still write when completed.
 
-        ``message_main_attachment_id`` is written by the chatter when a file is
-        attached, so it is always allowed to keep commenting with attachments
-        working. Extra fields come from the
-        ``maintenance_request_done_readonly.editable_fields`` system parameter;
-        every other field is locked.
+        They come from the ``maintenance_request_done_readonly.editable_fields``
+        system parameter; every other field is locked.
         """
         names = (
             self.env["ir.config_parameter"]
             .sudo()
             .get_param("maintenance_request_done_readonly.editable_fields", "")
         )
-        return {"message_main_attachment_id"} | {
-            name.strip() for name in names.split(",") if name.strip()
-        }
+        return {name.strip() for name in names.split(",") if name.strip()}
 
     def _can_edit_done(self):
         return self.env.user.has_group(
