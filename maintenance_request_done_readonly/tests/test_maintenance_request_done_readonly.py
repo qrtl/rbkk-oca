@@ -31,9 +31,6 @@ class TestMaintenanceRequestDoneReadonly(TransactionCase):
             groups="base.group_user,"
             "maintenance_request_done_readonly.group_maintenance_request_edit_done",
         )
-        cls.equipment = cls.env["maintenance.equipment"].create(
-            {"name": "Test Equipment"}
-        )
 
     def _new_request(self, user):
         # Regular users only see requests they own, follow or are assigned to
@@ -41,13 +38,13 @@ class TestMaintenanceRequestDoneReadonly(TransactionCase):
         # ``owner_user_id``: hr_maintenance (installed in CI) makes
         # ``owner_user_id`` a read-only computed field, so the value would be
         # ignored and the user would fail the rule on their own create.
+        # No equipment: other modules may require data per equipment on completion.
         return (
             self.env["maintenance.request"]
             .with_user(user)
             .create(
                 {
                     "name": "Test Request",
-                    "equipment_id": self.equipment.id,
                     "user_id": user.id,
                     "stage_id": self.open_stage.id,
                 }
