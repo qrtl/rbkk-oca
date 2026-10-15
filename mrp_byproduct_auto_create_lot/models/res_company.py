@@ -8,7 +8,7 @@ class ResCompany(models.Model):
     _inherit = "res.company"
 
     propagate_lot_to_byproduct = fields.Selection(
-        selection=[("no", "No"), ("yes", "Yes")],
+        selection=[("yes", "Yes"), ("no", "No")],
         string="Propagate Lot to Byproducts",
         default="no",
         required=True,
