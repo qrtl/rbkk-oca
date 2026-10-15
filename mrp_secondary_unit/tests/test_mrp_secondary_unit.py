@@ -333,31 +333,17 @@ class TestMrpSecondaryUnit(TransactionCase):
             self.finished_pallet, self.env["product.secondary.unit"].search(domain)
         )
 
-    def test_bom_secondary_unit_picked_keeps_qty(self):
-        """Same on a bill of materials, where a quantity reset to zero would
-        also break the constraint keeping it positive."""
-        bom = self.env["mrp.bom"].create(
-            {
-                "product_tmpl_id": self.finished.product_tmpl_id.id,
-                "product_uom_id": self.uom_unit.id,
-                "product_qty": 10.0,
-                "type": "normal",
-            }
-        )
-        bom.secondary_uom_id = self.finished_pallet
-        self.assertEqual(bom.product_qty, 10.0)
-        self.assertEqual(bom.secondary_uom_qty, 0.5)
-
-    def test_bom_secondary_unit_picked_in_form_keeps_qty(self):
-        """Picking the unit after typing the quantity must keep it: a quantity
-        reset to zero would also break the constraint keeping it positive."""
+    def test_bom_secondary_unit_picked_on_template_converts_uom(self):
+        """A bill of materials without a variant resolves the UoM the factor
+        refers to on the template, so a bill encoded in dozens is converted."""
         with Form(self.env["mrp.bom"]) as bom_form:
             bom_form.product_tmpl_id = self.finished.product_tmpl_id
-            bom_form.product_qty = 10.0
+            self.assertFalse(bom_form.product_id)
+            bom_form.product_uom_id = self.uom_dozen
             bom_form.secondary_uom_id = self.finished_pallet
-            self.assertEqual(bom_form.product_qty, 10.0)
-            self.assertEqual(bom_form.secondary_uom_qty, 0.5)
-        self.assertEqual(bom_form.record.product_qty, 10.0)
+            bom_form.secondary_uom_qty = 1.8
+            # 1.8 pallets of 20 -> 36 units -> 3 dozens
+            self.assertEqual(bom_form.product_qty, 3.0)
 
     def test_bom_line_secondary_unit_picked_keeps_qty(self):
         line = self.bom.bom_line_ids
@@ -366,6 +352,50 @@ class TestMrpSecondaryUnit(TransactionCase):
         line.secondary_uom_id = self.component_bag
         self.assertEqual(line.product_qty, 10.0)
         self.assertEqual(line.secondary_uom_qty, 2.0)
+
+    def test_bom_line_secondary_unit_picked_in_form_keeps_qty(self):
+        """Picking the unit after typing the quantity must keep it: a line
+        saved at zero would silently consume nothing in manufacturing."""
+        existing_lines = self.bom.bom_line_ids
+        with Form(self.bom) as bom_form:
+            with bom_form.bom_line_ids.new() as line_form:
+                line_form.product_id = self.component
+                line_form.product_qty = 10.0
+                line_form.secondary_uom_id = self.component_bag
+                self.assertEqual(line_form.product_qty, 10.0)
+                self.assertEqual(line_form.secondary_uom_qty, 2.0)
+        line = self.bom.bom_line_ids - existing_lines
+        self.assertEqual(line.product_qty, 10.0)
+        self.assertEqual(line.secondary_uom_qty, 2.0)
+
+    def test_bom_line_secondary_unit_switched_in_form_keeps_qty(self):
+        """Switching 2 bags of 5 kg to bags of 10 kg keeps the 10 kg."""
+        big_bag = self.env["product.secondary.unit"].create(
+            {
+                "name": "Bag of 10 kg",
+                "product_tmpl_id": self.component.product_tmpl_id.id,
+                "uom_id": self.uom_unit.id,
+                "factor": 10.0,
+            }
+        )
+        with Form(self.bom) as bom_form:
+            with bom_form.bom_line_ids.edit(0) as line_form:
+                line_form.secondary_uom_id = big_bag
+                self.assertEqual(line_form.product_qty, 10.0)
+                self.assertEqual(line_form.secondary_uom_qty, 1.0)
+        self.assertEqual(self.bom.bom_line_ids.product_qty, 10.0)
+        self.assertEqual(self.bom.bom_line_ids.secondary_uom_qty, 1.0)
+
+    def test_bom_secondary_unit_picked_in_form_keeps_qty(self):
+        """Same on the header, where a quantity reset to zero would also break
+        the constraint keeping it positive."""
+        with Form(self.env["mrp.bom"]) as bom_form:
+            bom_form.product_tmpl_id = self.finished.product_tmpl_id
+            bom_form.product_qty = 10.0
+            bom_form.secondary_uom_id = self.finished_pallet
+            self.assertEqual(bom_form.product_qty, 10.0)
+            self.assertEqual(bom_form.secondary_uom_qty, 0.5)
+        self.assertEqual(bom_form.record.product_qty, 10.0)
 
     def test_production_secondary_qty_drives_product_qty(self):
         production = self._new_production()
@@ -431,6 +461,33 @@ class TestMrpSecondaryUnit(TransactionCase):
         )
         self.assertEqual(finished_move.secondary_uom_id, self.finished_pallet)
         self.assertEqual(finished_move.secondary_uom_qty, 1.0)
+
+    def test_backorder_secondary_qty_follows_remaining_qty(self):
+        """3 pallets of 20 with 20 units produced leave 2 pallets to do, not 3."""
+        production = self._new_production(product_qty=60.0)
+        production.action_confirm()
+        production.qty_producing = 20.0
+        production.move_raw_ids.picked = True
+        action = production.with_context(skip_consumption=True).button_mark_done()
+        Form(
+            self.env[action["res_model"]].with_context(**action["context"])
+        ).save().action_backorder()
+        backorder = production.procurement_group_id.mrp_production_ids - production
+        self.assertEqual(backorder.product_qty, 40.0)
+        self.assertEqual(backorder.secondary_uom_qty, 2.0)
+
+    def test_split_secondary_qty_follows_split_qty(self):
+        production = self._new_production(product_qty=60.0)
+        production.action_confirm()
+        action = production.action_split()
+        split_form = Form(
+            self.env["mrp.production.split"].with_context(**action["context"])
+        )
+        split_form.counter = 3
+        split_form.save().action_split()
+        productions = production.procurement_group_id.mrp_production_ids
+        self.assertEqual(productions.mapped("product_qty"), [20.0] * 3)
+        self.assertEqual(productions.mapped("secondary_uom_qty"), [1.0] * 3)
 
     def test_component_added_manually_without_bom_line(self):
         """A component that does not come from the bill of materials must not

@@ -6,7 +6,7 @@ from odoo import api, models
 
 class MrpBomSecondaryUnitMixin(models.AbstractModel):
     _name = "mrp.bom.secondary.unit.mixin"
-    _inherit = "mrp.secondary.unit.mixin"
+    _inherit = "product.secondary.unit.mixin"
     _description = "MRP BoM Secondary Unit Mixin"
     _secondary_unit_fields = {
         "qty_field": "product_qty",
@@ -44,6 +44,26 @@ class MrpBomSecondaryUnitMixin(models.AbstractModel):
         # quantity has to be converted again when the unit of the line changes.
         return super()._get_secondary_uom_qty_depends() + ["product_uom_id"]
 
+    @api.onchange("secondary_uom_id")
+    def _onchange_secondary_uom_id_for_qty(self):
+        """Switching the secondary unit keeps the quantity, as on a
+        manufacturing order, instead of rescaling it with the new factor."""
+        self._onchange_helper_product_uom_for_secondary()
+        return super()._onchange_secondary_uom_id_for_qty()
+
     @api.depends("secondary_uom_qty", "secondary_uom_id")
     def _compute_product_qty(self):
         self._compute_helper_target_field_qty()
+
+    def _compute_helper_target_field_qty(self):
+        """Derive a secondary quantity still at zero before converting it back.
+
+        The conversion drops the pending recompute of the secondary quantity
+        before reading it, so picking a secondary unit on a quantity that was
+        typed first would read it as zero and save the line at zero, which
+        manufacturing orders then explode into nothing to consume.
+        """
+        for record in self:
+            if record.secondary_uom_id and not record.secondary_uom_qty:
+                record._onchange_helper_product_uom_for_secondary()
+        return super()._compute_helper_target_field_qty()
