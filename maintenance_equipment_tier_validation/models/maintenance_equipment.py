@@ -1,7 +1,5 @@
-# Copyright 2026 Quartile
+# Copyright 2026 Quartile (https://www.quartile.co)
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
-
-from lxml import etree
 
 from odoo import api, fields, models
 
@@ -28,7 +26,8 @@ class MaintenanceEquipment(models.Model):
     )
 
     def action_validate_equipment(self):
-        self.write({"state": "confirmed"})
+        # Only draft is under tier validation; confirming from cancel would skip it.
+        self.filtered(lambda rec: rec.state == "draft").write({"state": "confirmed"})
 
     def action_reset_to_draft(self):
         self.write({"state": "draft"})
@@ -37,48 +36,6 @@ class MaintenanceEquipment(models.Model):
         self.write({"state": "cancel"})
 
     @api.model
-    def _get_view(self, view_id=None, view_type="form", **options):
-        arch, view = super()._get_view(view_id, view_type, **options)
-        if view.type != "form":
-            return arch, view
-        # The core maintenance equipment form has no ``header`` element, so we
-        # add one on the fly rather than depending on ``base_maintenance`` just
-        # to get one. If a header is already present (e.g. because
-        # ``base_maintenance`` is installed), we reuse it to avoid duplicating
-        # it.
-        header = arch.find(".//header")
-        if header is None:
-            sheet = arch.find(".//sheet")
-            if sheet is None:
-                return arch, view
-            header = etree.Element("header")
-            sheet.addprevious(header)
-        buttons = [
-            {
-                "name": "action_validate_equipment",
-                "string": "Validate Equipment",
-                "class": "btn-primary",
-                "invisible": "state != 'draft' or "
-                "validation_status in ['pending', 'rejected']",
-            },
-            {
-                "name": "action_reset_to_draft",
-                "string": "Reset to Draft",
-                "invisible": "state != 'cancel'",
-            },
-            {
-                "name": "action_cancel",
-                "string": "Cancel",
-                "invisible": "state == 'cancel'",
-            },
-        ]
-        for vals in buttons:
-            button = etree.SubElement(header, "button")
-            button.set("type", "object")
-            for attr, value in vals.items():
-                button.set(attr, value)
-        statusbar = etree.SubElement(header, "field")
-        statusbar.set("name", "state")
-        statusbar.set("widget", "statusbar")
-        statusbar.set("statusbar_visible", "draft,confirmed")
-        return arch, view
+    def _get_after_validation_exceptions(self):
+        # Cancel and archive must work; cancelling drops the reviews anyway.
+        return super()._get_after_validation_exceptions() + ["state", "active"]

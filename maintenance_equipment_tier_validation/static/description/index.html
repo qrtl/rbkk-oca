@@ -389,7 +389,9 @@ support a tier validation process.</p>
 </div>
 <div class="section" id="installation">
 <h1><a class="toc-backref" href="#toc-entry-1">Installation</a></h1>
-<p>This module depends on <tt class="docutils literal">base_tier_validation</tt>. You can find it at
+<p>This module depends on <tt class="docutils literal">base_maintenance</tt> and
+<tt class="docutils literal">base_tier_validation</tt>. You can find them at
+<a class="reference external" href="https://github.com/OCA/maintenance">OCA/maintenance</a> and
 <a class="reference external" href="https://github.com/OCA/server-ux">OCA/server-ux</a>.</p>
 </div>
 <div class="section" id="configuration">
@@ -398,6 +400,15 @@ support a tier validation process.</p>
 <ol class="arabic simple">
 <li>Go to Settings &gt; Technical &gt; Tier Validations &gt; Tier Definition.</li>
 <li>Create as many tiers as you want for the Maintenance Equipment model.</li>
+</ol>
+<p>Once an equipment is validated, its fields become read-only. To keep
+some fields editable on confirmed equipment (e.g. location, technician,
+note):</p>
+<ol class="arabic simple">
+<li>Go to Settings &gt; Technical &gt; Tier Validations &gt; Tier Validation
+Exception.</li>
+<li>Create an exception for the Maintenance Equipment model, select those
+fields and check “Write after Validation”.</li>
 </ol>
 </div>
 <div class="section" id="usage">

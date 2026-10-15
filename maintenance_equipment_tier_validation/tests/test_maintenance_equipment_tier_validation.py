@@ -1,6 +1,7 @@
-# Copyright 2026 Quartile
+# Copyright 2026 Quartile (https://www.quartile.co)
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
+from odoo import Command
 from odoo.exceptions import ValidationError
 from odoo.tests import new_test_user, tagged
 from odoo.tests.common import TransactionCase
@@ -11,53 +12,80 @@ class TestMaintenanceEquipmentTierValidation(TransactionCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.Equipment = cls.env["maintenance.equipment"]
-        cls.TierDefinition = cls.env["tier.definition"]
-        cls.equipment_model = cls.env["ir.model"]._get("maintenance.equipment")
         cls.reviewer = new_test_user(
             cls.env,
-            name="Equipment Reviewer",
             login="equipment_reviewer",
-            groups="base.group_system,maintenance.group_equipment_manager",
+            groups="maintenance.group_equipment_manager",
         )
         cls.requester = new_test_user(
             cls.env,
-            name="Equipment Requester",
             login="equipment_requester",
-            groups="base.group_system,maintenance.group_equipment_manager",
+            groups="maintenance.group_equipment_manager",
         )
-        cls.TierDefinition.create(
+        cls.env["tier.definition"].create(
             {
-                "model_id": cls.equipment_model.id,
+                "model_id": cls.env["ir.model"]._get_id("maintenance.equipment"),
                 "review_type": "individual",
                 "reviewer_id": cls.reviewer.id,
                 "definition_domain": "[]",
             }
         )
+        cls.equipment = (
+            cls.env["maintenance.equipment"]
+            .with_user(cls.requester)
+            .create({"name": "Test Equipment"})
+        )
 
     def test_tier_validation_model_name(self):
         self.assertIn(
             "maintenance.equipment",
-            self.TierDefinition._get_tier_validation_model_names(),
+            self.env["tier.definition"]._get_tier_validation_model_names(),
         )
 
-    def test_validation_maintenance_equipment(self):
-        equipment_to_block = self.Equipment.create({"name": "Equipment to block"})
-
+    def test_validate_equipment(self):
+        self.assertTrue(self.equipment.need_validation)
         with self.assertRaises(ValidationError):
-            equipment_to_block.with_user(self.requester).action_validate_equipment()
+            self.equipment.action_validate_equipment()
+        self.equipment.request_validation()
+        self.equipment.with_user(self.reviewer).validate_tier()
+        self.assertEqual(self.equipment.validation_status, "validated")
+        self.equipment.invalidate_recordset()
+        self.equipment.action_validate_equipment()
+        self.assertEqual(self.equipment.state, "confirmed")
 
-        equipment = self.Equipment.create({"name": "Equipment to validate"})
+    def test_cancel_and_reset_to_draft(self):
+        self.equipment.request_validation()
+        self.equipment.action_cancel()
+        self.assertEqual(self.equipment.state, "cancel")
+        self.assertFalse(self.equipment.review_ids)
+        self.equipment.action_reset_to_draft()
+        self.assertEqual(self.equipment.state, "draft")
+        self.assertTrue(self.equipment.need_validation)
 
-        self.assertEqual(equipment.state, "draft")
-        self.assertTrue(equipment.need_validation)
-
-        equipment.with_user(self.requester).request_validation()
-        self.assertTrue(equipment.review_ids)
-
-        equipment.with_user(self.reviewer).validate_tier()
-        self.assertEqual(equipment.validation_status, "validated")
-
-        equipment.invalidate_recordset()
-        equipment.with_user(self.requester).action_validate_equipment()
+    def test_existing_equipment_confirmed_on_install(self):
+        equipment = self.env.ref("maintenance.equipment_monitor1", False)
+        if not equipment:
+            self.skipTest("Requires maintenance demo data")
         self.assertEqual(equipment.state, "confirmed")
+
+    def test_validate_skips_cancelled_equipment(self):
+        self.equipment.action_cancel()
+        self.equipment.action_validate_equipment()
+        self.assertEqual(self.equipment.state, "cancel")
+
+    def test_cancel_validated_with_after_validation_exception(self):
+        location = self.env["ir.model.fields"]._get("maintenance.equipment", "location")
+        # Any exception enables the after-validation write check.
+        self.env["tier.validation.exception"].create(
+            {
+                "model_id": location.model_id.id,
+                "field_ids": [Command.link(location.id)],
+                "allowed_to_write_after_validation": True,
+            }
+        )
+        self.equipment.request_validation()
+        self.equipment.with_user(self.reviewer).validate_tier()
+        self.equipment.invalidate_recordset()
+        self.equipment.action_validate_equipment()
+        self.equipment.action_cancel()
+        self.assertEqual(self.equipment.state, "cancel")

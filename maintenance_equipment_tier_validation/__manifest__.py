@@ -1,4 +1,4 @@
-# Copyright 2026 Quartile
+# Copyright 2026 Quartile (https://www.quartile.co)
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
 {
@@ -12,6 +12,7 @@
     "license": "AGPL-3",
     "application": False,
     "installable": True,
-    "depends": ["maintenance", "base_tier_validation"],
+    "depends": ["base_maintenance", "base_tier_validation"],
     "data": ["views/maintenance_equipment_views.xml"],
+    "pre_init_hook": "pre_init_hook",
 }

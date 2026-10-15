@@ -1,7 +1,41 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<!-- Copyright 2026 Quartile
+<!-- Copyright 2026 Quartile (https://www.quartile.co)
      License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
 <odoo>
+    <record id="hr_equipment_view_form" model="ir.ui.view">
+        <field name="name">maintenance.equipment.form - tier validation</field>
+        <field name="model">maintenance.equipment</field>
+        <field name="inherit_id" ref="base_maintenance.hr_equipment_view_form" />
+        <field name="arch" type="xml">
+            <header position="inside">
+                <button
+                    name="action_validate_equipment"
+                    type="object"
+                    string="Validate Equipment"
+                    class="btn-primary"
+                    invisible="state != 'draft' or validation_status in ['pending', 'rejected']"
+                />
+                <button
+                    name="action_reset_to_draft"
+                    type="object"
+                    string="Reset to Draft"
+                    invisible="state != 'cancel'"
+                />
+                <button
+                    name="action_cancel"
+                    type="object"
+                    string="Cancel"
+                    invisible="state == 'cancel'"
+                />
+                <field
+                    name="state"
+                    widget="statusbar"
+                    statusbar_visible="draft,confirmed"
+                />
+            </header>
+        </field>
+    </record>
+
     <record id="hr_equipment_view_tree" model="ir.ui.view">
         <field name="name">maintenance.equipment.list - tier validation</field>
         <field name="model">maintenance.equipment</field>

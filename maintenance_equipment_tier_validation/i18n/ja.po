@@ -21,6 +21,11 @@ msgid "Can Review"
 msgstr "レビュー可能"
 
 #. module: maintenance_equipment_tier_validation
+#: model_terms:ir.ui.view,arch_db:maintenance_equipment_tier_validation.hr_equipment_view_form
+msgid "Cancel"
+msgstr "キャンセル"
+
+#. module: maintenance_equipment_tier_validation
 #: model:ir.model.fields.selection,name:maintenance_equipment_tier_validation.selection__maintenance_equipment__state__cancel
 msgid "Cancelled"
 msgstr "キャンセル済"
@@ -91,6 +96,11 @@ msgid "Rejected Message"
 msgstr "拒否メッセージ"
 
 #. module: maintenance_equipment_tier_validation
+#: model_terms:ir.ui.view,arch_db:maintenance_equipment_tier_validation.hr_equipment_view_form
+msgid "Reset to Draft"
+msgstr "ドラフトにリセット"
+
+#. module: maintenance_equipment_tier_validation
 #: model:ir.model.fields,field_description:maintenance_equipment_tier_validation.field_maintenance_equipment__reviewer_ids
 msgid "Reviewers"
 msgstr "レビュアー"
@@ -115,6 +125,11 @@ msgstr "段階定義"
 #: model:ir.model.fields,field_description:maintenance_equipment_tier_validation.field_maintenance_equipment__to_validate_message
 msgid "To Validate Message"
 msgstr "未承認メッセージ"
+
+#. module: maintenance_equipment_tier_validation
+#: model_terms:ir.ui.view,arch_db:maintenance_equipment_tier_validation.hr_equipment_view_form
+msgid "Validate Equipment"
+msgstr "確認"
 
 #. module: maintenance_equipment_tier_validation
 #: model:ir.model.fields,field_description:maintenance_equipment_tier_validation.field_maintenance_equipment__validated
