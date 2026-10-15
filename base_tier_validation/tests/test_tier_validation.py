@@ -128,13 +128,14 @@ class TierTierValidation(CommonTierValidation):
         # Create new test record
         test_record = self.test_model.create({"test_field": 2.5})
         # Create tier definitions
-        self.tier_def_obj.create(
+        tier_def = self.tier_def_obj.create(
             {
                 "model_id": self.tester_model.id,
                 "review_type": "individual",
                 "reviewer_id": self.test_user_1.id,
                 "definition_domain": "[('test_field', '>', 1.0)]",
                 "has_comment": True,
+                "comment_approve_default": "Approved",
             }
         )
         # Request validation
@@ -145,7 +146,19 @@ class TierTierValidation(CommonTierValidation):
         record = test_record.with_user(self.test_user_1.id)
         res = record.validate_tier()
         ctx = res.get("context")
+        # Default comment pre-filled from tier definition
+        self.assertEqual(ctx.get("default_comment"), "Approved")
         wizard = Form(self.env["comment.wizard"].with_context(**ctx))
+        self.assertEqual(wizard.comment, "Approved")
+
+        # Clear default approve comment
+        tier_def.write({"comment_approve_default": False})
+
+        res = record.validate_tier()
+        ctx = res.get("context")
+        self.assertEqual(ctx.get("default_comment"), "")
+        wizard = Form(self.env["comment.wizard"].with_context(**ctx))
+        self.assertEqual(wizard.comment, "")
         wizard.comment = "Test Comment"
         wiz = wizard.save()
         wiz.add_comment()
@@ -365,10 +378,14 @@ class TierTierValidation(CommonTierValidation):
 
     def test_12_approve_sequence_same_user_bypassed(self):
         """Similar to test_12_approve_sequence, with all same users,
-        but approve_sequence_bypass is True"""
+        but approve_sequence_bypass is True
+        Sequence of reviewers: A, A, B, A.
+        When A validates, it should only validate the first two (A, A) and stop at B.
+        """
         # Create new test record
         test_record = self.test_model.create({"test_field": 2.5})
         # Create tier definitions
+        # sequence 40 (User 1)
         self.tier_def_obj.create(
             {
                 "model_id": self.tester_model.id,
@@ -377,9 +394,34 @@ class TierTierValidation(CommonTierValidation):
                 "definition_domain": "[('test_field', '>', 1.0)]",
                 "approve_sequence": True,
                 "approve_sequence_bypass": True,
+                "sequence": 40,
+            }
+        )
+        # sequence 30 (User 1)
+        self.tier_def_obj.create(
+            {
+                "model_id": self.tester_model.id,
+                "review_type": "individual",
+                "reviewer_id": self.test_user_1.id,
+                "definition_domain": "[('test_field', '>', 1.0)]",
+                "approve_sequence": True,
+                "approve_sequence_bypass": True,
+                "sequence": 30,
+            }
+        )
+        # sequence 20 (User 2)
+        self.tier_def_obj.create(
+            {
+                "model_id": self.tester_model.id,
+                "review_type": "individual",
+                "reviewer_id": self.test_user_2.id,
+                "definition_domain": "[('test_field', '>', 1.0)]",
+                "approve_sequence": True,
+                "approve_sequence_bypass": True,
                 "sequence": 20,
             }
         )
+        # sequence 10 (User 1)
         self.tier_def_obj.create(
             {
                 "model_id": self.tester_model.id,
@@ -399,13 +441,41 @@ class TierTierValidation(CommonTierValidation):
         record1 = test_record.with_user(self.test_user_1.id)
         self.assertTrue(record1.can_review)
         # When the first tier is validated, all the rest will be approved.
-        self.assertEqual(len(record1.review_ids), 2)
+        self.assertEqual(len(record1.review_ids), 4)
         self.assertEqual(
-            1, len(record1.review_ids.filtered(lambda x: x.status == "waiting"))
+            3, len(record1.review_ids.filtered(lambda x: x.status == "waiting"))
         )
         self.assertEqual(
             1, len(record1.review_ids.filtered(lambda x: x.status == "pending"))
         )
+        record1.validate_tier()
+        # After user 1 validates, they should have approved exactly 2 tiers: 40 and 30
+        # 20 and 10 should be pending.
+        self.assertEqual(
+            2, len(record1.review_ids.filtered(lambda x: x.status == "pending"))
+        )
+        self.assertEqual(
+            0, len(record1.review_ids.filtered(lambda x: x.status == "waiting"))
+        )
+        self.assertEqual(
+            2, len(record1.review_ids.filtered(lambda x: x.status == "approved"))
+        )
+        self.assertFalse(record1.can_review)
+        # User 2 validates.
+        record2 = test_record.with_user(self.test_user_2.id)
+        self.assertTrue(record2.can_review)
+        record2.validate_tier()
+        self.assertEqual(
+            1, len(record1.review_ids.filtered(lambda x: x.status == "pending"))
+        )
+        self.assertEqual(
+            0, len(record1.review_ids.filtered(lambda x: x.status == "waiting"))
+        )
+        self.assertEqual(
+            3, len(record1.review_ids.filtered(lambda x: x.status == "approved"))
+        )
+        # User 1 validates the final tier.
+        self.assertTrue(record1.can_review)
         record1.validate_tier()
         self.assertEqual(
             0, len(record1.review_ids.filtered(lambda x: x.status == "pending"))
@@ -414,8 +484,9 @@ class TierTierValidation(CommonTierValidation):
             0, len(record1.review_ids.filtered(lambda x: x.status == "waiting"))
         )
         self.assertEqual(
-            2, len(record1.review_ids.filtered(lambda x: x.status == "approved"))
+            4, len(record1.review_ids.filtered(lambda x: x.status == "approved"))
         )
+        self.assertEqual(record1.validation_status, "validated")
 
     def test_13_onchange_review_type(self):
         tier_def_id = self.tier_def_obj.create(
@@ -1371,3 +1442,26 @@ class TierTierValidationView(CommonTierValidation):
         self.assertIn("need_validation", view["models"][model])
         self.assertIn("next_review", view["models"][model])
         self.assertIn("review_ids", view["models"][model])
+
+    def test_view_without_header_nor_sheet(self):
+        """The readonly domain added on every field of the form relies on
+        validation_status. That field is brought in by the tier validation
+        buttons, which are inserted on _tier_validation_buttons_xpath: on views
+        without such an insertion point (no header), the field has to be added
+        anyway, otherwise the client can not evaluate the domain (this is what
+        happens on base.view_partner_simple_form, opened by the mail composer).
+        """
+        view = self.env["ir.ui.view"].create(
+            {
+                "name": "tier.validation.tester2.simple.form",
+                "model": self.test_model_2._name,
+                "arch": "<form><field name='test_field'/></form>",
+            }
+        )
+        res = self.test_model_2.get_view(view_id=view.id, view_type="form")
+        arch = res["arch"]
+        if isinstance(arch, bytes):
+            arch = arch.decode()
+        self.assertIn("validation_status", res["models"][self.test_model_2._name])
+        self.assertIn('name="validation_status"', arch)
+        self.assertIn("validation_status not in", arch)

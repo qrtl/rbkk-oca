@@ -535,9 +535,19 @@ class TierValidation(models.AbstractModel):
                 }
             )
 
-        user_reviews = tier_reviews.filtered(
-            lambda r: r.status == "pending" and (self.env.user in r.reviewer_ids)
+        # Only approve consecutive pending reviews (by sequence) for the
+        # current user. Stop at the first review not assigned to the user,
+        # so intermediate reviewers are not skipped.
+        sorted_pending = tier_reviews.filtered(lambda r: r.status == "pending").sorted(
+            "sequence"
         )
+        user_reviews = self.env["tier.review"]
+        for review in sorted_pending:
+            if self.env.user in review.reviewer_ids:
+                user_reviews |= review
+            else:
+                break
+
         user_reviews.write(
             {
                 "status": "approved",
@@ -635,7 +645,11 @@ class TierValidation(models.AbstractModel):
             user_reviews = reviews.filtered(
                 lambda r: r.status == "pending" and (self.env.user in r.reviewer_ids)
             )
-            return self._add_comment("validate", user_reviews)
+            action = self._add_comment("validate", user_reviews)
+            action["context"]["default_comment"] = (
+                user_reviews[:1].definition_id.comment_approve_default or ""
+            )
+            return action
         self._validate_tier(reviews)
         self._update_counter({"review_deleted": True})
 
@@ -915,6 +929,24 @@ class TierValidation(models.AbstractModel):
                 _merge_view_fields(all_models, new_models)
             excepted_fields = self._get_all_validation_exceptions()
             all_fields = self.fields_get(attributes=("readonly",))
+            # The readonly modifier added below relies on validation_status.
+            # That field node is brought in by the tier validation buttons
+            # snippet, inserted on _tier_validation_buttons_xpath (the label
+            # only refers to the field in its invisible modifiers): on views
+            # without such an insertion point (eg. the small partner form
+            # views), the field is missing from the view while the modifier is
+            # still added, and the client can not evaluate it.
+            if not doc.xpath(
+                "//field[@name='validation_status'][not(ancestor::field)]"
+            ):
+                new_node = etree.fromstring(
+                    '<div><field name="validation_status" invisible="1"/></div>'
+                )
+                new_arch, new_models = View.postprocess_and_fields(new_node, self._name)
+                new_node = etree.fromstring(new_arch)
+                for new_element in new_node:
+                    doc.append(new_element)
+                _merge_view_fields(all_models, new_models)
             for node in doc.xpath("//field[@name][not(ancestor::field)]"):
                 field_name = node.attrib.get("name")
                 if field_name in excepted_fields:
