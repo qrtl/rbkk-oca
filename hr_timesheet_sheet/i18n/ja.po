@@ -168,6 +168,15 @@ msgstr ""
 
 #. module: hr_timesheet_sheet
 #: model_terms:ir.ui.view,arch_db:hr_timesheet_sheet.res_config_settings_view_form
+msgid ""
+"Choose an employee field pointing to a user. That user can review the "
+"employee's timesheet sheets."
+msgstr ""
+"ユーザを参照する従業員フィールドを選択してください。そのユーザはその従業員のタイムシートレポート"
+"をレビューできます。"
+
+#. module: hr_timesheet_sheet
+#: model_terms:ir.ui.view,arch_db:hr_timesheet_sheet.res_config_settings_view_form
 msgid "Choose the week start day."
 msgstr ""
 
@@ -302,6 +311,17 @@ msgstr "編集"
 #: model:ir.model.fields,field_description:hr_timesheet_sheet.field_hr_timesheet_sheet_new_analytic_line__employee_id
 msgid "Employee"
 msgstr "従業員"
+
+#. module: hr_timesheet_sheet
+#: model:ir.model.fields,help:hr_timesheet_sheet.field_res_company__timesheet_sheet_approver_field_id
+#: model:ir.model.fields,help:hr_timesheet_sheet.field_res_config_settings__timesheet_sheet_approver_field_id
+msgid ""
+"Employee field pointing to one or more users (res.users). The users found in"
+" this field on the employee can review the employee's timesheet sheets, in "
+"addition to the review policy."
+msgstr ""
+"1人以上のユーザ (res.users) を参照する従業員フィールド。従業員のこのフィールドに設定されたユー"
+"ザは、レビューポリシーに加えて、その従業員のタイムシートレポートをレビューできます。"
 
 #. module: hr_timesheet_sheet
 #: model_terms:ir.ui.view,arch_db:hr_timesheet_sheet.hr_timesheet_sheet_form
@@ -826,6 +846,12 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:hr_timesheet_sheet.hr_timesheet_sheet_form
 msgid "Timesheet Activities"
 msgstr "タイムシート活動明細"
+
+#. module: hr_timesheet_sheet
+#: model:ir.model.fields,field_description:hr_timesheet_sheet.field_res_company__timesheet_sheet_approver_field_id
+#: model:ir.model.fields,field_description:hr_timesheet_sheet.field_res_config_settings__timesheet_sheet_approver_field_id
+msgid "Timesheet Approver Field"
+msgstr "タイムシート承認者フィールド"
 
 #. module: hr_timesheet_sheet
 #: model_terms:ir.ui.view,arch_db:hr_timesheet_sheet.res_config_settings_view_form
