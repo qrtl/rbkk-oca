@@ -6,14 +6,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 18.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-25 14:04+0000\n"
-"PO-Revision-Date: 2026-03-25 14:04+0000\n"
-"Last-Translator: \n"
-"Language-Team: \n"
+"PO-Revision-Date: 2026-04-16 14:50+0000\n"
+"Last-Translator: Shinnosuke Morita <m.shinnosuke1202@gmail.com>\n"
+"Language-Team: none\n"
+"Language: ja\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
-"Plural-Forms: \n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Weblate 5.15.2\n"
 
 #. module: hr_timesheet_sheet_attendance
 #: model:ir.model,name:hr_timesheet_sheet_attendance.model_hr_attendance
@@ -55,13 +56,7 @@ msgstr "差異"
 #. module: hr_timesheet_sheet_attendance
 #: model:ir.model.fields,field_description:hr_timesheet_sheet_attendance.field_hr_attendance__sheet_id
 msgid "Sheet"
-msgstr "タイムシートレポート"
-
-#. module: hr_timesheet_sheet_attendance
-#: model:ir.model.fields,field_description:hr_timesheet_sheet_attendance.field_hr_attendance__smart_search
-#: model:ir.model.fields,field_description:hr_timesheet_sheet_attendance.field_hr_timesheet_sheet__smart_search
-msgid "Smart Search"
-msgstr "スマートサーチ"
+msgstr "表"
 
 #. module: hr_timesheet_sheet_attendance
 #. odoo-python
@@ -84,7 +79,7 @@ msgstr "タイムシート活動明細"
 #. module: hr_timesheet_sheet_attendance
 #: model:ir.model,name:hr_timesheet_sheet_attendance.model_hr_timesheet_sheet
 msgid "Timesheet Sheet"
-msgstr "タイムシートレポート"
+msgstr "タイムシート"
 
 #. module: hr_timesheet_sheet_attendance
 #: model:ir.model.fields,field_description:hr_timesheet_sheet_attendance.field_hr_timesheet_sheet__total_attendance
@@ -104,10 +99,12 @@ msgstr "タイムシート期間外の日付で勤怠を入力することはで
 msgid ""
 "You can not enter an attendance in a submitted timesheet. Ask your manager "
 "to reset it before adding attendance."
-msgstr "提出済みのタイムシートに勤怠を入力することはできません。勤怠を追加する前に、マネージャーにリセットを依頼してください。"
+msgstr ""
+"提出済みのタイムシートに勤怠を入力することはできません。勤怠を追加する前に、"
+"マネージャーにリセットを依頼してください。"
 
 #. module: hr_timesheet_sheet_attendance
 #. odoo-python
 #: code:addons/hr_timesheet_sheet_attendance/models/hr_attendance.py:0
 msgid "You cannot modify an entry in a confirmed timesheet"
-msgstr "承認済みのタイムシートの項目は変更できません。"
+msgstr "承認済みのタイムシートの項目は変更できません"
