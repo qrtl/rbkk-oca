@@ -14,5 +14,6 @@
         "security/security.xml",
         "views/stock_menu_views.xml",
     ],
+    "maintainers": ["yostashiro", "aungkokolin1997"],
     "installable": True,
 }
